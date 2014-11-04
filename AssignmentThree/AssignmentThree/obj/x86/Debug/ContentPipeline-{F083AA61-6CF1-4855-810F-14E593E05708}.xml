@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Pipeline="Microsoft.Xna.Framework.Content.Pipeline">
+  <Asset Type="Pipeline:BuildItemCollection">
+    <BuildSuccessful>true</BuildSuccessful>
+    <Settings>
+      <ContentProjectGUID>{F083AA61-6CF1-4855-810F-14E593E05708}</ContentProjectGUID>
+      <TargetPlatform>Windows</TargetPlatform>
+      <TargetProfile>Reach</TargetProfile>
+      <BuildConfiguration>Debug</BuildConfiguration>
+      <CompressContent>false</CompressContent>
+      <RootDirectory>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThreeContent\</RootDirectory>
+      <LoggerRootDirectory>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\</LoggerRootDirectory>
+      <IntermediateDirectory>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\obj\x86\Debug\</IntermediateDirectory>
+      <OutputDirectory>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\bin\x86\Debug\Content\</OutputDirectory>
+    </Settings>
+    <Assemblies>
+      <Assembly>
+        <Key>C:\Windows\Microsoft.Net\assembly\GAC_32\Microsoft.Xna.Framework.Content.Pipeline\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.Content.Pipeline.dll</Key>
+        <Value>2014-09-12T19:25:46.9801145-07:00</Value>
+      </Assembly>
+    </Assemblies>
+  </Asset>
+</XnaContent>
