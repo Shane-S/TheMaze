@@ -19,11 +19,13 @@ namespace AssignmentThree
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        List<Room> rooms;
         Cube myCube;
         BasicEffect effect;
         float angle;
         Vector3 position;
         Camera camera;
+        Texture2D box;
 
         KeyboardState oldKeyboardState;
 
@@ -43,7 +45,7 @@ namespace AssignmentThree
         {
             // TODO: Add your initialization logic here
             effect = new BasicEffect(graphics.GraphicsDevice);
-            effect.AmbientLightColor = new Vector3(0.0f, 1.0f, 0.0f);
+            effect.AmbientLightColor = new Vector3(0.0f, 1.0f, 1.0f);
             effect.DirectionalLight0.Enabled = true;
             effect.DirectionalLight0.DiffuseColor = Vector3.One;
             effect.DirectionalLight0.Direction = Vector3.Normalize(Vector3.One);
@@ -60,9 +62,13 @@ namespace AssignmentThree
             effect.View = camera.view;
 
             myCube = new Cube();
-            myCube.size = new Vector3(1, 1, 1);
+            myCube.size = new Vector3(3, 3, 3);
             myCube.position = new Vector3(0, 0, 0);
             myCube.BuildShape();
+
+            Labyrinth lab = new Labyrinth(4, 4);
+            lab.GeneratePaths();
+            rooms = lab.GenerateRooms(6);
 
             angle = 0;
             position = new Vector3(0, 0, 0);
@@ -79,6 +85,7 @@ namespace AssignmentThree
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            box = Content.Load<Texture2D>("wooden-crate");
             // TODO: use this.Content to load your game content here
         }
 
@@ -102,7 +109,7 @@ namespace AssignmentThree
 
             camera.Update(position, angle, graphics);
 
-            Matrix R = Matrix.CreateRotationX(.4f);
+            Matrix R = Matrix.Identity;
             Matrix T = Matrix.CreateTranslation(0.0f, 0f, 5f);
             Matrix S = Matrix.Identity;
 
@@ -151,6 +158,19 @@ namespace AssignmentThree
 
             // TODO: Add your drawing code here
             myCube.RenderShape(GraphicsDevice, effect);
+
+            bool alt = false;
+
+            effect.TextureEnabled = true;
+            effect.Texture = box;
+
+            foreach (Room room in rooms)
+            {
+                //effect.AmbientLightColor = alt ? new Vector3(1.0f, 1.0f, 0.0f) : new Vector3(0.0f, 1.0f, 1.0f);
+                effect.World = Matrix.CreateTranslation(room.position);
+                room.RenderShape(GraphicsDevice, effect);
+                alt = !alt;
+            }
 
             base.Draw(gameTime);
         }

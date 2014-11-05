@@ -24,7 +24,7 @@ namespace AssignmentThree
             this.size = new Vector3(0, 0, 0);
             this.position = new Vector3(0, 0, 0);
             this.vertices = null;
-            BuildShape();
+            //BuildShape();
         }
 
         public BasicShape(Vector3 size, Vector3 position)
