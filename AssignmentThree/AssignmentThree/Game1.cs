@@ -20,12 +20,24 @@ namespace AssignmentThree
         SpriteBatch spriteBatch;
 
         List<Room> rooms;
+        List<Plane> northWalls;
+        List<Plane> southWalls;
+        List<Plane> westWalls;
+        List<Plane> eastWalls;
+        List<Plane> ceilWalls;
+        List<Plane> floorWalls;
+
         Cube myCube;
         BasicEffect effect;
         float angle;
         Vector3 position;
         Camera camera;
         Texture2D box;
+        Texture2D boxRed;
+        Texture2D boxBlue;
+        Texture2D boxGreen;
+        Texture2D boxPurple;
+        Texture2D boxYellow;
 
         KeyboardState oldKeyboardState;
 
@@ -45,7 +57,7 @@ namespace AssignmentThree
         {
             // TODO: Add your initialization logic here
             effect = new BasicEffect(graphics.GraphicsDevice);
-            effect.AmbientLightColor = new Vector3(0.0f, 1.0f, 1.0f);
+            effect.AmbientLightColor = new Vector3(1.0f, 1.0f, 1.0f);
             effect.DirectionalLight0.Enabled = true;
             effect.DirectionalLight0.DiffuseColor = Vector3.One;
             effect.DirectionalLight0.Direction = Vector3.Normalize(Vector3.One);
@@ -66,9 +78,17 @@ namespace AssignmentThree
             myCube.position = new Vector3(0, 0, 0);
             myCube.BuildShape();
 
-            Labyrinth lab = new Labyrinth(4, 4);
+            Labyrinth lab = new Labyrinth(10, 10);
             lab.GeneratePaths();
-            rooms = lab.GenerateRooms(6);
+
+            northWalls = new List<Plane>();
+            southWalls = new List<Plane>();
+            westWalls = new List<Plane>();
+            eastWalls = new List<Plane>();
+            ceilWalls = new List<Plane>();
+            floorWalls = new List<Plane>();
+
+            rooms = lab.GenerateRooms(6, ref northWalls, ref southWalls, ref eastWalls, ref westWalls, ref ceilWalls, ref floorWalls);
 
             angle = 0;
             position = new Vector3(0, 0, 0);
@@ -86,6 +106,11 @@ namespace AssignmentThree
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             box = Content.Load<Texture2D>("wooden-crate");
+            boxRed = Content.Load<Texture2D>("wooden-crate-red");
+            boxBlue = Content.Load<Texture2D>("wooden-crate-blue");
+            boxGreen = Content.Load<Texture2D>("wooden-crate-green");
+            boxPurple = Content.Load<Texture2D>("wooden-crate-purple");
+            boxYellow = Content.Load<Texture2D>("wooden-crate-yellow");
             // TODO: use this.Content to load your game content here
         }
 
@@ -159,18 +184,59 @@ namespace AssignmentThree
             // TODO: Add your drawing code here
             myCube.RenderShape(GraphicsDevice, effect);
 
-            bool alt = false;
+            //bool alt = false;
 
             effect.TextureEnabled = true;
-            effect.Texture = box;
 
-            foreach (Room room in rooms)
+            foreach (Plane wall in northWalls)
             {
-                //effect.AmbientLightColor = alt ? new Vector3(1.0f, 1.0f, 0.0f) : new Vector3(0.0f, 1.0f, 1.0f);
-                effect.World = Matrix.CreateTranslation(room.position);
-                room.RenderShape(GraphicsDevice, effect);
-                alt = !alt;
+                effect.Texture = box;
+                effect.World = Matrix.CreateTranslation(wall.position);
+                wall.RenderShape(GraphicsDevice, effect);
             }
+
+            foreach (Plane wall in southWalls)
+            {
+                effect.Texture = boxBlue;
+                effect.World = Matrix.CreateTranslation(wall.position);
+                wall.RenderShape(GraphicsDevice, effect);
+            }
+
+            foreach (Plane wall in westWalls)
+            {
+                effect.Texture = boxRed;
+                effect.World = Matrix.CreateTranslation(wall.position);
+                wall.RenderShape(GraphicsDevice, effect);
+            }
+
+            foreach (Plane wall in eastWalls)
+            {
+                effect.Texture = boxGreen;
+                effect.World = Matrix.CreateTranslation(wall.position);
+                wall.RenderShape(GraphicsDevice, effect);
+            }
+
+            foreach (Plane wall in ceilWalls)
+            {
+                effect.Texture = boxYellow;
+                effect.World = Matrix.CreateTranslation(wall.position);
+                wall.RenderShape(GraphicsDevice, effect);
+            }
+
+            foreach (Plane wall in floorWalls)
+            {
+                effect.Texture = boxPurple;
+                effect.World = Matrix.CreateTranslation(wall.position);
+                wall.RenderShape(GraphicsDevice, effect);
+            }
+
+            //foreach (Room room in rooms)
+            //{
+            //    //effect.AmbientLightColor = alt ? new Vector3(1.0f, 1.0f, 0.0f) : new Vector3(0.0f, 1.0f, 1.0f);
+            //    effect.World = Matrix.CreateTranslation(room.position);
+            //    room.RenderShape(GraphicsDevice, effect);
+            //    alt = !alt;
+            //}
 
             base.Draw(gameTime);
         }

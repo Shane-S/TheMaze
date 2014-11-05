@@ -10,6 +10,51 @@
       <Output>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\bin\x86\Debug\Content\wooden-crate.xnb</Output>
       <Time>2014-11-04T08:11:40.6028669-08:00</Time>
     </Item>
+    <Item>
+      <Source>wooden-crate-blue.jpg</Source>
+      <Name>wooden-crate-blue</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\bin\x86\Debug\Content\wooden-crate-blue.xnb</Output>
+      <Time>2014-11-05T00:12:59.8054102-08:00</Time>
+    </Item>
+    <Item>
+      <Source>wooden-crate-green.jpg</Source>
+      <Name>wooden-crate-green</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\bin\x86\Debug\Content\wooden-crate-green.xnb</Output>
+      <Time>2014-11-05T00:14:52.1302714-08:00</Time>
+    </Item>
+    <Item>
+      <Source>wooden-crate-purple.jpg</Source>
+      <Name>wooden-crate-purple</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\bin\x86\Debug\Content\wooden-crate-purple.xnb</Output>
+      <Time>2014-11-05T00:14:13.2226322-08:00</Time>
+    </Item>
+    <Item>
+      <Source>wooden-crate-red.jpg</Source>
+      <Name>wooden-crate-red</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\bin\x86\Debug\Content\wooden-crate-red.xnb</Output>
+      <Time>2014-11-05T00:13:27.3822052-08:00</Time>
+    </Item>
+    <Item>
+      <Source>wooden-crate-yellow.jpg</Source>
+      <Name>wooden-crate-yellow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>D:\Development\XNA\Assignments\COMP7051_DanAndShane_AssignmentThree\AssignmentThree\AssignmentThree\bin\x86\Debug\Content\wooden-crate-yellow.xnb</Output>
+      <Time>2014-11-05T00:15:16.9342987-08:00</Time>
+    </Item>
     <BuildSuccessful>true</BuildSuccessful>
     <Settings>
       <ContentProjectGUID>{F083AA61-6CF1-4855-810F-14E593E05708}</ContentProjectGUID>

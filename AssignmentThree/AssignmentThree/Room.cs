@@ -13,7 +13,17 @@ namespace AssignmentThree
 {
     class Room : BasicShape
     {
-        public void BuildShape(int numfaces, bool northWall, bool southWall, bool eastWall, bool westWall)
+        public void BuildShape(int numfaces, 
+            bool northWall, 
+            bool southWall, 
+            bool eastWall, 
+            bool westWall,
+            ref List<Plane> northWalls, 
+            ref List<Plane> southWalls, 
+            ref List<Plane> eastWalls, 
+            ref List<Plane> westWalls, 
+            ref List<Plane> ceils, 
+            ref List<Plane> floors)
         {
             primitiveCount = numfaces * 2;
             vertices = new VertexPositionNormalTexture[6 * numfaces];
@@ -38,34 +48,38 @@ namespace AssignmentThree
             Vector2 textureTopRight = new Vector2(0.0f, 0.0f);
             Vector2 textureBottomLeft = new Vector2(1f, 1f);
             Vector2 textureBottomRight = new Vector2(0.0f, 1f);
-
-            int count = 0;
-
+            
             //front face
             if (northWall)
             {
-                vertices[0] = new VertexPositionNormalTexture(face[0] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureTopLeft);
-                vertices[1] = new VertexPositionNormalTexture(face[1] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureBottomLeft);
-                vertices[2] = new VertexPositionNormalTexture(face[2] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureTopRight);
-                vertices[3] = new VertexPositionNormalTexture(face[3] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureBottomLeft);
-                vertices[4] = new VertexPositionNormalTexture(face[4] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureBottomRight);
-                vertices[5] = new VertexPositionNormalTexture(face[5] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureTopRight);
+                VertexPositionNormalTexture[] planeVertices = new VertexPositionNormalTexture[6];
 
-                count += 6;
+                planeVertices[0] = new VertexPositionNormalTexture(face[0] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureTopLeft);
+                planeVertices[1] = new VertexPositionNormalTexture(face[1] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureBottomLeft);
+                planeVertices[2] = new VertexPositionNormalTexture(face[2] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureTopRight);
+                planeVertices[3] = new VertexPositionNormalTexture(face[3] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureBottomLeft);
+                planeVertices[4] = new VertexPositionNormalTexture(face[4] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureBottomRight);
+                planeVertices[5] = new VertexPositionNormalTexture(face[5] + Vector3.UnitZ * size.Z + position, Vector3.UnitZ, textureTopRight);
+
+                Plane plane = new Plane(size, position, planeVertices);
+                northWalls.Add(plane);
             }
 
 
             //back face
             if (southWall)
             {
-                vertices[0 + count] = new VertexPositionNormalTexture(face[2] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureTopLeft);
-                vertices[1 + count] = new VertexPositionNormalTexture(face[1] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureTopRight);
-                vertices[2 + count] = new VertexPositionNormalTexture(face[0] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureBottomLeft);
-                vertices[3 + count] = new VertexPositionNormalTexture(face[5] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureBottomRight);
-                vertices[4 + count] = new VertexPositionNormalTexture(face[4] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureTopRight);
-                vertices[5 + count] = new VertexPositionNormalTexture(face[3] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureBottomLeft);
+                VertexPositionNormalTexture[] planeVertices = new VertexPositionNormalTexture[6];
 
-                count += 6;
+                planeVertices[0] = new VertexPositionNormalTexture(face[2] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureTopLeft);
+                planeVertices[1] = new VertexPositionNormalTexture(face[1] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureTopRight);
+                planeVertices[2] = new VertexPositionNormalTexture(face[0] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureBottomLeft);
+                planeVertices[3] = new VertexPositionNormalTexture(face[5] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureBottomRight);
+                planeVertices[4] = new VertexPositionNormalTexture(face[4] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureTopRight);
+                planeVertices[5] = new VertexPositionNormalTexture(face[3] - Vector3.UnitZ * size.Z + position, -Vector3.UnitZ, textureBottomLeft);
+
+                Plane plane = new Plane(size, position, planeVertices);
+                southWalls.Add(plane);
             }
 
 
@@ -73,53 +87,65 @@ namespace AssignmentThree
             Matrix RotY90 = Matrix.CreateRotationY(-(float)Math.PI / 2f);
             if (westWall)
             {
-                vertices[0 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureTopRight);
-                vertices[1 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureBottomLeft);
-                vertices[2 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureBottomRight);
-                vertices[count + 3] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureTopLeft);
-                vertices[count + 4] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureBottomLeft);
-                vertices[count + 5] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureTopRight);
+                VertexPositionNormalTexture[] planeVertices = new VertexPositionNormalTexture[6];
 
+                planeVertices[0] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureTopRight);
+                planeVertices[1] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureBottomLeft);
+                planeVertices[2] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureBottomRight);
+                planeVertices[3] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureTopLeft);
+                planeVertices[4] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureBottomLeft);
+                planeVertices[5] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotY90) - Vector3.UnitX * size.X + position, -Vector3.UnitX, textureTopRight);
 
-                count += 6;
+                Plane plane = new Plane(size, position, planeVertices);
+                westWalls.Add(plane);
             }
 
 
             //Right face
             if (eastWall)
             {
-                vertices[0 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureTopLeft);
-                vertices[1 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureTopRight);
-                vertices[2 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureBottomLeft);
-                vertices[count + 3] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureBottomLeft);
-                vertices[count + 4] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureTopRight);
-                vertices[count + 5] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureBottomRight);
-                
-                count += 6;
+                VertexPositionNormalTexture[] planeVertices = new VertexPositionNormalTexture[6];
+
+                planeVertices[0] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureTopLeft);
+                planeVertices[1] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureTopRight);
+                planeVertices[2] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureBottomLeft);
+                planeVertices[3] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureBottomLeft);
+                planeVertices[4] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureTopRight);
+                planeVertices[5] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotY90) + Vector3.UnitX * size.X + position, Vector3.UnitX, textureBottomRight);
+
+                Plane plane = new Plane(size, position, planeVertices);
+                eastWalls.Add(plane);
             }
 
 
             //Top face
             Matrix RotX90 = Matrix.CreateRotationX(-(float)Math.PI / 2f);
 
-            vertices[0 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureBottomLeft);
-            vertices[1 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureTopRight);
-            vertices[2 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureTopLeft);
-            vertices[3 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureBottomLeft);
-            vertices[4 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureBottomRight);
-            vertices[5 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureTopRight);
-            
-            count += 6;
+            VertexPositionNormalTexture[] topPlaneVertices = new VertexPositionNormalTexture[6];
 
+            topPlaneVertices[0] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureBottomLeft);
+            topPlaneVertices[1] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureTopRight);
+            topPlaneVertices[2] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureTopLeft);
+            topPlaneVertices[3] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureBottomLeft);
+            topPlaneVertices[4] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureBottomRight);
+            topPlaneVertices[5] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotX90) + Vector3.UnitY * size.Y + position, Vector3.UnitY, textureTopRight);
+
+            Plane ceil = new Plane(size, position, topPlaneVertices);
+            ceils.Add(ceil);
+
+
+            VertexPositionNormalTexture[] bottomPlaneVertices = new VertexPositionNormalTexture[6];
 
             //Bottom face
-            vertices[0 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureTopLeft);
-            vertices[1 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureTopRight);
-            vertices[2 + count] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureBottomLeft);
-            vertices[count + 3] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureBottomLeft);
-            vertices[count + 4] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureTopRight);
-            vertices[count + 5] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureBottomRight);
+            bottomPlaneVertices[0] = new VertexPositionNormalTexture(Vector3.Transform(face[2], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureTopLeft);
+            bottomPlaneVertices[1] = new VertexPositionNormalTexture(Vector3.Transform(face[1], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureTopRight);
+            bottomPlaneVertices[2] = new VertexPositionNormalTexture(Vector3.Transform(face[0], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureBottomLeft);
+            bottomPlaneVertices[3] = new VertexPositionNormalTexture(Vector3.Transform(face[5], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureBottomLeft);
+            bottomPlaneVertices[4] = new VertexPositionNormalTexture(Vector3.Transform(face[4], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureTopRight);
+            bottomPlaneVertices[5] = new VertexPositionNormalTexture(Vector3.Transform(face[3], RotX90) - Vector3.UnitY * size.Y + position, -Vector3.UnitY, textureBottomRight);
 
+            Plane floor = new Plane(size, position, bottomPlaneVertices);
+            floors.Add(floor);
         }
 
          public override void BuildShape()

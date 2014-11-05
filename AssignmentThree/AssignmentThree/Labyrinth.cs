@@ -159,7 +159,7 @@ namespace AssignmentThree
             return width * height;
         }
 
-        public List<Room> GenerateRooms(int size)
+        public List<Room> GenerateRooms(int size, ref List<Plane> northWalls, ref List<Plane> southWalls, ref List<Plane> eastWalls, ref List<Plane> westWalls, ref List<Plane> ceils, ref List<Plane> floors)
         {
             List<Room> rooms = new List<Room>();
 
@@ -170,7 +170,7 @@ namespace AssignmentThree
                 Room room = new Room();
                 room.size = new Vector3(size, size, size);
                 room.position = new Vector3(cell.x * size, 0, -cell.y * size);
-                room.BuildShape(cell.GetNumberOfWalls(), cell.northWall, cell.southWall, cell.eastWall, cell.westWall);
+                room.BuildShape(cell.GetNumberOfWalls(), cell.northWall, cell.southWall, cell.eastWall, cell.westWall, ref northWalls, ref southWalls, ref eastWalls, ref westWalls, ref ceils, ref floors);
 
                 rooms.Add(room);
             }
