@@ -1,5 +1,5 @@
-*/*.cache
-*/*.cachefile
+*.cache
+*.cachefile
 AssignmentThree/AssignmentThree/bin/*
 AssignmentThree/AssignmentThree/obj/*
 *.suo

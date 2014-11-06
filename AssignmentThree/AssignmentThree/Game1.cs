@@ -50,8 +50,6 @@ namespace AssignmentThree
         Texture2D boxYellow;
 
         InputManager inputMgr;
-        KeyboardState oldKeyboardState;
-        MouseState oldMouseState;
 
         public Game1()
         {
@@ -247,24 +245,22 @@ namespace AssignmentThree
 
         public void GetInput()
         {
-            KeyboardState keyboardState = Keyboard.GetState();
-
-            inputMgr.Update(GamePad.GetState(PlayerIndex.One), Keyboard.GetState());
+            Vector2 d;
+            inputMgr.Update(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState());
 
             // Allows the game to exit
             if (inputMgr.ExitWasPressed())
                 this.Exit();
 
             #region Check for Camera Panning
-            // TODO: Add your update logic here
             if (inputMgr.ActionOccurred("pan_left", InputActionType.Down))
-                angleHorz = angleHorz + 0.03f;
+                angleHorz = angleHorz + 2f;
             if (inputMgr.ActionOccurred("pan_right", InputActionType.Down))
-                angleHorz = angleHorz - 0.03f;
+                angleHorz = angleHorz - 2f;
             if (inputMgr.ActionOccurred("pan_up", InputActionType.Down)) 
-                angleVert = angleVert + 0.03f;
+                angleVert = angleVert - 2f;
             if (inputMgr.ActionOccurred("pan_down", InputActionType.Down))
-                angleVert = angleVert - 0.03f;
+                angleVert = angleVert + 2f;
             #endregion
             #region Check for Player Movement
             if (inputMgr.ActionOccurred("move_forward", InputActionType.Down))
@@ -284,22 +280,14 @@ namespace AssignmentThree
             }
 
             // Mouse movement
-            MouseState currentMouseState = Mouse.GetState();
-            if ((currentMouseState.X != oldMouseState.X) || (currentMouseState.Y != oldMouseState.Y))
-            {
-                int dx = oldMouseState.X - currentMouseState.X;
-                int dy = oldMouseState.Y - currentMouseState.Y;
-                angleHorz += dx * 0.2f;
-                angleVert -= dy * 0.2f;
-            }
+            inputMgr.GetMouseDiff(out d);
+            angleHorz += d.X * 0.2f;
+            angleVert -= d.Y * 0.2f;
 
             Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
-            oldMouseState = Mouse.GetState();
-            
+            inputMgr.UpdateMouseState(Mouse.GetState());
             //if (angleHorz > 2 * Math.PI) angleHorz = 0;
             //if (angleVert > 2 * Math.PI) angleVert = 0;
-
-            oldKeyboardState = keyboardState;
         }
 
         /// <summary>

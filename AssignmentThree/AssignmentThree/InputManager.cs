@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework;
 
 namespace AssignmentThree
 {
@@ -98,6 +99,16 @@ namespace AssignmentThree
         private GamePadState _curGState;
 
         /// <summary>
+        /// The mouse state in the previous update.
+        /// </summary>
+        private MouseState _prevMState;
+
+        /// <summary>
+        /// The mouse state in the current update.
+        /// </summary>
+        private MouseState _curMState;
+
+        /// <summary>
         /// The input that will cause the game to exit.
         /// </summary>
         private InputAction _exit;
@@ -130,12 +141,7 @@ namespace AssignmentThree
         /// <param name="escapeButton"></param>
         public InputManager(InputAction pause, InputAction exit)
             : base()
-        {
-            _prevKState = new KeyboardState();
-            _prevGState = new GamePadState();
-            _curKState = new KeyboardState();
-            _curGState = new GamePadState();
-
+        {        
             _pause = pause;
             _exit = exit;
             _actions = new Dictionary<string, InputAction>();
@@ -146,12 +152,44 @@ namespace AssignmentThree
         /// </summary>
         /// <param name="gState">The current GamePadState for a given player.</param>
         /// <param name="kState">The current KeyboardState.</param>
-        public void Update(GamePadState gState, KeyboardState kState)
+        public void Update(GamePadState gState, KeyboardState kState, MouseState mState)
         {
             _prevKState = _curKState;
             _prevGState = _curGState;
+            _prevMState = _curMState;
             _curKState = kState;
             _curGState = gState;
+            _curMState = mState;
+        }
+
+        /// <summary>
+        /// Update the gamepad's state.
+        /// </summary>
+        /// <param name="gState">The current gamepad state.</param>
+        public void UpdateGamePad(GamePadState gState)
+        {
+            _prevGState = _curGState;
+            _curGState = gState;
+        }
+
+        /// <summary>
+        /// Update the keyboard's state.
+        /// </summary>
+        /// <param name="kState">The keyboard's current state.</param>
+        public void UpdateKeyboard(KeyboardState kState)
+        {
+            _prevKState = _curKState;
+            _curKState = kState;
+        }
+
+        /// <summary>
+        /// Update the mouse's state.
+        /// </summary>
+        /// <param name="mState">The mouse's current state.</param>
+        public void UpdateMouseState(MouseState mState)
+        {
+            _prevMState = _curMState;
+            _curMState = mState;
         }
 
         /// <summary>
@@ -315,6 +353,17 @@ namespace AssignmentThree
             }
             return i != b.Length;
         }
+        
+        /// <summary>
+        /// Gets the mouse's movement in the x and y axes since the last update.
+        /// </summary>
+        /// <param name="mouseDiff">A Vector2 to hold the differences.</param>
+        public void GetMouseDiff(out Vector2 mouseDiff)
+        {
+            mouseDiff.X = _prevMState.X - _curMState.X;
+            mouseDiff.Y = _prevMState.Y - _curMState.Y;
+        }
+
 
         /// <summary>
         /// Determines whether the specified action occurred.
@@ -402,8 +451,10 @@ namespace AssignmentThree
         {
             _prevKState = new KeyboardState();
             _prevGState = new GamePadState();
+            _prevMState = new MouseState();
             _curKState = new KeyboardState();
             _curGState = new GamePadState();
+            _curMState = new MouseState();
         }
     }
 }
