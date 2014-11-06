@@ -37,6 +37,7 @@ namespace AssignmentThree
 
         Cube myCube;
         BasicEffect effect;
+        Effect sceneEffect;
         float angleHorz;
         float angleVert;
         Vector3 position;
@@ -47,8 +48,8 @@ namespace AssignmentThree
         Texture2D boxGreen;
         Texture2D boxPurple;
         Texture2D boxYellow;
-        Effect sceneEffect;
 
+        InputManager inputMgr;
         KeyboardState oldKeyboardState;
         MouseState oldMouseState;
 
@@ -66,26 +67,29 @@ namespace AssignmentThree
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            #region Initialise Effect
             effect = new BasicEffect(graphics.GraphicsDevice);
             effect.AmbientLightColor = new Vector3(1.0f, 1.0f, 1.0f);
             effect.DirectionalLight0.Enabled = true;
             effect.DirectionalLight0.DiffuseColor = Vector3.One;
             effect.DirectionalLight0.Direction = Vector3.Normalize(Vector3.One);
             effect.LightingEnabled = true;
-
+            #endregion
+            #region Initialise Camer & Viewing
             Matrix projection = Matrix.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f,
                                 (float)this.Window.ClientBounds.Width / (float)this.Window.ClientBounds.Height, 1f, 10f);
             
             Matrix V = Matrix.CreateTranslation(0f, 0f, -10f);
 
             camera = new Camera();
-
+            #endregion
+            #region Initialise Cube
             myCube = new Cube();
             myCube.size = new Vector3(3, 3, 3);
             myCube.position = new Vector3(0, 0, 0);
             myCube.BuildShape();
-
+            #endregion
+            #region Generate Labyrinth
             lab = new Labyrinth(10, 10);
             lab.GeneratePaths();
 
@@ -97,11 +101,27 @@ namespace AssignmentThree
             floorWalls = new List<Plane>();
 
             rooms = lab.GenerateRooms(6, ref northWalls, ref southWalls, ref eastWalls, ref westWalls, ref ceilWalls, ref floorWalls);
-
+            #endregion
+            #region Initialise Player
             angleHorz = 0;
             angleVert = 0;
             position = lab.GetPlayerSpawn();
+            #endregion
+            #region Initialise Input Manager
+            inputMgr = new InputManager();
 
+            inputMgr.AddNamedAction("pan_left", new InputAction(Keys.Left, Buttons.DPadLeft));
+            inputMgr.AddNamedAction("pan_right", new InputAction(Keys.Right, Buttons.DPadRight));
+            inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, Buttons.DPadUp));
+            inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, Buttons.DPadDown));
+
+            inputMgr.AddNamedAction("move_left", new InputAction(Keys.A, Buttons.DPadRight));
+            inputMgr.AddNamedAction("move_right", new InputAction(Keys.D, Buttons.DPadLeft));
+            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.W, Buttons.DPadLeft));
+            inputMgr.AddNamedAction("move_back", new InputAction(Keys.S, Buttons.DPadRight));
+
+            inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
+            #endregion
             base.Initialize();
         }
 
@@ -229,28 +249,34 @@ namespace AssignmentThree
         {
             KeyboardState keyboardState = Keyboard.GetState();
 
+            inputMgr.Update(GamePad.GetState(PlayerIndex.One), Keyboard.GetState());
+
             // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Escape))
+            if (inputMgr.ExitWasPressed())
                 this.Exit();
 
+            #region Check for Camera Panning
             // TODO: Add your update logic here
-            if (GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Left))
+            if (inputMgr.ActionOccurred("pan_left", InputActionType.Down))
                 angleHorz = angleHorz + 0.03f;
-            if (GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Right))
+            if (inputMgr.ActionOccurred("pan_right", InputActionType.Down))
                 angleHorz = angleHorz - 0.03f;
-            if (GamePad.GetState(PlayerIndex.One).DPad.Up == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Up))
+            if (inputMgr.ActionOccurred("pan_up", InputActionType.Down)) 
                 angleVert = angleVert + 0.03f;
-            if (GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Down))
+            if (inputMgr.ActionOccurred("pan_down", InputActionType.Down))
                 angleVert = angleVert - 0.03f;
-            if (GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.W))
+            #endregion
+            #region Check for Player Movement
+            if (inputMgr.ActionOccurred("move_forward", InputActionType.Down))
                 MoveCamera(new Vector3(0, 0, 0.2f));
-            if (GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.S))
+            if (inputMgr.ActionOccurred("move_back", InputActionType.Down))
                 MoveCamera(new Vector3(0, 0, -0.2f));
-            if (GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.A))
-                MoveCamera(new Vector3(0.2f, 0, 0));
-            if (GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.D))
+            if (inputMgr.ActionOccurred("move_right", InputActionType.Down))
                 MoveCamera(new Vector3(-0.2f, 0, 0));
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Home))
+            if (inputMgr.ActionOccurred("move_left", InputActionType.Down))
+                MoveCamera(new Vector3(0.2f, 0, 0));
+            #endregion
+            if (inputMgr.ActionOccurred("reset", InputActionType.Pressed))
             {
                 angleHorz = 0;
                 angleVert = 0;

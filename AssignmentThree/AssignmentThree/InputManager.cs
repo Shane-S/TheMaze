@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Input;
 
-namespace Lab3
+namespace AssignmentThree
 {
     /// <summary>
     /// A type of input action.
@@ -46,23 +46,27 @@ namespace Lab3
         /// <summary>
         /// The key corresponding to the action.
         /// </summary>
-        public Keys ActionKey;
+        public Keys[] ActionKeys;
 
         /// <summary>
         /// The button corresponding to the action.
         /// </summary>
-        public Buttons ActionButton;
+        public Buttons[] ActionButtons;
 
         /// <summary>
         /// Constructs a new InputAction with the specified values.
         /// </summary>
         /// <param name="ActionKey">The key corresponding to this action.</param>
         /// <param name="ActionButton">The button corresponding to this action.</param>
-        public InputAction(Keys ActionKey, Buttons ActionButton)
+        public InputAction(Keys[] ActionKeys, Buttons[] ActionButtons)
         {
-            this.ActionKey = ActionKey;
-            this.ActionButton = ActionButton;
+            this.ActionKeys = ActionKeys;
+            this.ActionButtons = ActionButtons;
         }
+
+        public InputAction(Keys ActionKey, Buttons ActionButton)
+            : this(new Keys[] { ActionKey }, new Buttons[] { ActionButton })
+        {}
     }
 
     public class InputManager
@@ -72,8 +76,7 @@ namespace Lab3
         public const int MOVING_LEFT = -1;
 
         public static readonly InputAction DEFAULT_ESCAPE = new InputAction(Keys.Escape, Buttons.Back);
-        public static readonly InputAction DEFAULT_RIGHT = new InputAction(Keys.Right, Buttons.RightShoulder);
-        public static readonly InputAction DEFAULT_LEFT = new InputAction(Keys.Left, Buttons.LeftShoulder);
+        public static readonly InputAction DEFAULT_PAUSE = new InputAction(Keys.Home, Buttons.Start);
         /// <summary>
         /// The keyboard state in the last frame.
         /// </summary>
@@ -102,12 +105,7 @@ namespace Lab3
         /// <summary>
         /// The input that will cause the player to move left.
         /// </summary>
-        private InputAction _leftMove;
-
-        /// <summary>
-        /// The input that will cause the player to move right.
-        /// </summary>
-        private InputAction _rightMove;
+        private InputAction _pause;
 
         /// <summary>
         /// A mapping of named actions to InputActions.
@@ -115,36 +113,22 @@ namespace Lab3
         private Dictionary<string, InputAction> _actions;
 
         /// <summary>
-        /// Gets or sets the input that will cause the player to move left.
-        /// </summary>
-        public InputAction LeftMove { get { return _leftMove; } set { _leftMove = value; } }
-        
-        /// <summary>
-        /// Gets or sets the input that will cause the player to move right.
-        /// </summary>
-        public InputAction RightMove { get { return _rightMove; } set { _rightMove = value; } }
-
-        /// <summary>
         /// Gets or sets the input that will cause the game to exit.
         /// </summary>
         public InputAction Exit { get { return _exit; } set { _exit = value; } }
 
+        public InputAction Pause { get { return _pause; } set { _pause = value; } }
+
         public InputManager()
-            : this(DEFAULT_RIGHT, DEFAULT_LEFT, DEFAULT_ESCAPE)
+            : this(DEFAULT_PAUSE, DEFAULT_ESCAPE)
         { }
-
-        public InputManager(InputAction rightMove, InputAction leftMove)
-            : this(rightMove, leftMove, DEFAULT_ESCAPE)
-        {
-
-        }
 
         /// <summary>
         /// Create an InputManager with the specified escape key and button.
         /// </summary>
         /// <param name="escapeKey"></param>
         /// <param name="escapeButton"></param>
-        public InputManager(InputAction rightMove, InputAction leftMove, InputAction exit)
+        public InputManager(InputAction pause, InputAction exit)
             : base()
         {
             _prevKState = new KeyboardState();
@@ -152,8 +136,7 @@ namespace Lab3
             _curKState = new KeyboardState();
             _curGState = new GamePadState();
 
-            _rightMove = rightMove;
-            _leftMove = leftMove;
+            _pause = pause;
             _exit = exit;
             _actions = new Dictionary<string, InputAction>();
         }
@@ -172,53 +155,84 @@ namespace Lab3
         }
 
         /// <summary>
-        /// Determines whether a key was pressed last frame.
+        /// Determines whether at least one of a set of keys was pressed last frame.
         /// </summary>
-        /// <param name="k">The key to check.</param>
-        /// <returns>Whether the key k was pressed last frame.</returns>
-        public bool KeyWasPressed(Keys k)
+        /// <param name="k">The keys to check.</param>
+        /// <returns>Whether at least one of the keys was pressed last frame.</returns>
+        public bool KeyWasPressed(Keys[] k)
         {
-            return _prevKState.IsKeyDown(k) && _curKState.IsKeyUp(k);
+            int i;
+            for (i = 0; i < k.Length; i++)
+            {
+                if (_prevKState.IsKeyDown(k[i]) && _curKState.IsKeyUp(k[i]))
+                    break;
+            }
+            return i != k.Length;
         }
 
         /// <summary>
-        /// Determines whether the specified button on the gamepad was pressed.
+        /// Determines whether at least one of a set of gamepad buttons was pressed.
         /// </summary>
-        /// <param name="b">The button to check.</param>
-        /// <returns>Whether button b was pressed last frame.</returns>
-        public bool ButtonWasPressed(Buttons b)
+        /// <param name="b">The buttons to check.</param>
+        /// <returns>Whether at least one of the buttons was pressed last frame.</returns>
+        public bool ButtonWasPressed(Buttons[] b)
         {
-            return _prevGState.IsButtonDown(b) && _curGState.IsButtonUp(b);
+            int i;
+            for (i = 0; i < b.Length; i++)
+            {
+                if (_prevGState.IsButtonDown(b[i]) && _curGState.IsButtonUp(b[i]))
+                    break;
+            }
+            return i != b.Length;
         }
 
         /// <summary>
-        /// Determines whether a key was held down between two updates.
+        /// Determines whether at least one of a set of keys was held down between two updates.
         /// </summary>
-        /// <param name="k">The key to check.</param>
-        /// <returns>Whether the key was held.</returns>
-        public bool KeyHeld(Keys k)
+        /// <param name="k">The keys to check.</param>
+        /// <returns>Whether at least one of the keys was held.</returns>
+        public bool KeyHeld(Keys[] k)
         {
-            return _curKState.IsKeyDown(k) && _prevKState.IsKeyDown(k);
+            int i;
+            for (i = 0; i < k.Length; i++)
+            {
+                if (_prevKState.IsKeyDown(k[i]) && _curKState.IsKeyDown(k[i]))
+                    break;
+            }
+            return i != k.Length;
         }
 
         /// <summary>
-        /// Determines whether a button was held down between updates.
+        /// Determines whether at least one of a set of buttons was held down between updates.
         /// </summary>
-        /// <param name="b">The button to check.</param>
-        /// <returns>Whether the button was held down.</returns>
-        public bool ButtonHeld(Buttons b)
+        /// <param name="b">The buttons to check.</param>
+        /// <returns>Whether at least one of the buttons was held down.</returns>
+        public bool ButtonHeld(Buttons[] b)
         {
-            return _curGState.IsButtonDown(b) && _prevGState.IsButtonDown(b);
+            int i;
+            for (i = 0; i < b.Length; i++)
+            {
+                if (_prevGState.IsButtonDown(b[i]) && _curGState.IsButtonDown(b[i]))
+                    break;
+            }
+
+            return i != b.Length;
         }
 
         /// <summary>
-        /// Determines whether a key was up between two updates.
+        /// Determines whether at least one of a set of keys was up between two updates.
         /// </summary>
-        /// <param name="k">The key to check.</param>
-        /// <returns>Whether the key was up.</returns>
-        public bool KeyStillUp(Keys k)
+        /// <param name="k">The keys to check.</param>
+        /// <returns>Whether at least one of the keys was still up.</returns>
+        public bool KeyStillUp(Keys[] k)
         {
-            return _curKState.IsKeyUp(k) && _prevKState.IsKeyUp(k);
+            int i;
+            for (i = 0; i < k.Length; i++)
+            {
+                if (_prevKState.IsKeyUp(k[i]) && _curKState.IsKeyUp(k[i]))
+                    break;
+            }
+            return i != k.Length;
         }
 
         /// <summary>
@@ -226,9 +240,80 @@ namespace Lab3
         /// </summary>
         /// <param name="b">The button to check.</param>
         /// <returns>Whether the button was up.</returns>
-        public bool ButtonStillUp(Buttons b)
+        public bool ButtonStillUp(Buttons[] b)
         {
-            return _curGState.IsButtonUp(b) && _prevGState.IsButtonUp(b);
+            int i;
+            for (i = 0; i < b.Length; i++)
+            {
+                if (_curGState.IsButtonUp(b[i]) && _prevGState.IsButtonUp(b[i]))
+                    break;
+            }
+
+            return i != b.Length;
+        }
+
+        /// <summary>
+        /// Determines whether at least one of a set of keys was up between two updates.
+        /// </summary>
+        /// <param name="k">The keys to check.</param>
+        /// <returns>Whether at least one of the keys was up.</returns>
+        public bool KeyIsDown(Keys[] k)
+        {
+            int i;
+            for(i = 0; i < k.Length; i++)
+            {
+                if (_prevKState.IsKeyDown(k[i]) || _curKState.IsKeyDown(k[i]))
+                    break;
+            }
+            return i != k.Length;
+        }
+
+        /// <summary>
+        /// Determines whether at least one of a set of keys was up between two updates.
+        /// </summary>
+        /// <param name="k">The keys to check.</param>
+        /// <returns>Whether at least one of the keys was up.</returns>
+        public bool KeyIsUp(Keys[] k)
+        {
+            int i;
+            for (i = 0; i < k.Length; i++)
+            {
+                if (_prevKState.IsKeyUp(k[i]) || _curKState.IsKeyUp(k[i]))
+                    break;
+            }
+            return i != k.Length;
+        }
+
+        /// <summary>
+        /// Determines whether at least one of a set of keys was up between two updates.
+        /// </summary>
+        /// <param name="k">The keys to check.</param>
+        /// <returns>Whether at least one of the keys was up.</returns>
+        public bool ButtonIsUp(Buttons[] b)
+        {
+            int i;
+            for (i = 0; i < b.Length; i++)
+            {
+                if (_prevGState.IsButtonUp(b[i]) || _curGState.IsButtonUp(b[i]))
+                    break;
+            }
+            return i != b.Length;
+        }
+
+        /// <summary>
+        /// Determines whether at least one of a set of keys was up between two updates.
+        /// </summary>
+        /// <param name="k">The keys to check.</param>
+        /// <returns>Whether at least one of the keys was up.</returns>
+        public bool ButtonIsDown(Buttons[] b)
+        {
+            int i;
+            for (i = 0; i < b.Length; i++)
+            {
+                if (_prevGState.IsButtonDown(b[i]) || _curGState.IsButtonDown(b[i]))
+                    break;
+            }
+            return i != b.Length;
         }
 
         /// <summary>
@@ -242,15 +327,15 @@ namespace Lab3
             switch(type)
             {
                 case InputActionType.Pressed:
-                    return KeyWasPressed(action.ActionKey) || ButtonWasPressed(action.ActionButton);
+                    return KeyWasPressed(action.ActionKeys) || ButtonWasPressed(action.ActionButtons);
                 case InputActionType.StillDown:
-                    return KeyHeld(action.ActionKey) || ButtonHeld(action.ActionButton);
+                    return KeyHeld(action.ActionKeys) || ButtonHeld(action.ActionButtons);
                 case InputActionType.StillUp:
-                    return KeyStillUp(action.ActionKey) || ButtonStillUp(action.ActionButton);
+                    return KeyStillUp(action.ActionKeys) || ButtonStillUp(action.ActionButtons);
                 case InputActionType.Down:
-                    return _curKState.IsKeyDown(action.ActionKey) || _curGState.IsButtonDown(action.ActionButton);
+                    return KeyIsDown(action.ActionKeys) || ButtonIsDown(action.ActionButtons);
                 case InputActionType.Up:
-                    return _curKState.IsKeyUp(action.ActionKey) || _curGState.IsButtonDown(action.ActionButton);
+                    return KeyIsUp(action.ActionKeys) || ButtonIsUp(action.ActionButtons);
                 default:
                     throw new ArgumentException("Unknown action type " + type);
             }
@@ -301,6 +386,15 @@ namespace Lab3
         public bool ExitWasPressed()
         {
             return ActionOccurred(_exit, InputActionType.Pressed);
+        }
+
+        /// <summary>
+        /// Determines whether the pause button was pressed.
+        /// </summary>
+        /// <returns></returns>
+        public bool PauseWasPressed()
+        {
+            return ActionOccurred(_pause, InputActionType.Pressed);
         }
 
         // Reset the input states

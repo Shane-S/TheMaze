@@ -70,6 +70,8 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Lighting.fx">
       <Name>Lighting</Name>
       <Importer>EffectImporter</Importer>
