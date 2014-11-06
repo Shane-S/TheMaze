@@ -79,22 +79,22 @@ namespace AssignmentThree
         public static readonly InputAction DEFAULT_ESCAPE = new InputAction(Keys.Escape, Buttons.Back);
         public static readonly InputAction DEFAULT_PAUSE = new InputAction(Keys.Home, Buttons.Start);
         /// <summary>
-        /// The keyboard state in the last frame.
+        /// The keyboard state in the last update.
         /// </summary>
         private KeyboardState _prevKState;
 
         /// <summary>
-        /// The gamepad state in the last frame.
+        /// The gamepad state in the last update.
         /// </summary>
         private GamePadState _prevGState;
 
         /// <summary>
-        /// The keyboard state in the current frame.
+        /// The keyboard state in the current update.
         /// </summary>
         private KeyboardState _curKState;
 
         /// <summary>
-        /// The gamepad state in the current frame.
+        /// The gamepad state in the current update.
         /// </summary>
         private GamePadState _curGState;
 
@@ -124,10 +124,13 @@ namespace AssignmentThree
         private Dictionary<string, InputAction> _actions;
 
         /// <summary>
-        /// Gets or sets the input that will cause the game to exit.
+        /// Gets or sets the exit InputAction.
         /// </summary>
         public InputAction Exit { get { return _exit; } set { _exit = value; } }
 
+        /// <summary>
+        /// Gets or sets the pause InputAction.
+        /// </summary>
         public InputAction Pause { get { return _pause; } set { _pause = value; } }
 
         public InputManager()
@@ -193,10 +196,11 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of keys was pressed last frame.
+        /// Determines whether at least one of a set of keys was pressed between the
+        /// last update and the current one.
         /// </summary>
         /// <param name="k">The keys to check.</param>
-        /// <returns>Whether at least one of the keys was pressed last frame.</returns>
+        /// <returns>Whether at least one of the keys was pressed.</returns>
         public bool KeyWasPressed(Keys[] k)
         {
             int i;
@@ -209,10 +213,11 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of gamepad buttons was pressed.
+        /// Determines whether at least one of a set of gamepad buttons was pressed
+        /// between the last update and the current one.
         /// </summary>
         /// <param name="b">The buttons to check.</param>
-        /// <returns>Whether at least one of the buttons was pressed last frame.</returns>
+        /// <returns>Whether at least one of the buttons was pressed.</returns>
         public bool ButtonWasPressed(Buttons[] b)
         {
             int i;
@@ -225,7 +230,8 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of keys was held down between two updates.
+        /// Determines whether at least one of a set of keys was held down 
+        /// during the last update and the current one.
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was held.</returns>
@@ -241,7 +247,8 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of buttons was held down between updates.
+        /// Determines whether at least one of a set of buttons was held down 
+        /// during the last update and the current one.
         /// </summary>
         /// <param name="b">The buttons to check.</param>
         /// <returns>Whether at least one of the buttons was held down.</returns>
@@ -258,7 +265,8 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of keys was up between two updates.
+        /// Determines whether at least one of a set of keys was up during
+        /// the last update and the current one.
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was still up.</returns>
@@ -274,10 +282,11 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether a button was up between updates.
+        /// Determines whether at least one of a set of buttons was up during 
+        /// the last update and the current one.
         /// </summary>
-        /// <param name="b">The button to check.</param>
-        /// <returns>Whether the button was up.</returns>
+        /// <param name="b">The buttons to check.</param>
+        /// <returns>Whether the buttons was up.</returns>
         public bool ButtonStillUp(Buttons[] b)
         {
             int i;
@@ -291,7 +300,8 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of keys was up between two updates.
+        /// Determines whether at least one of a set of keys was up during the
+        /// current update.
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was up.</returns>
@@ -307,7 +317,8 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of keys was up between two updates.
+        /// Determines whether at least one of a set of keys was up during 
+        /// the current update.
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was up.</returns>
@@ -323,7 +334,8 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of keys was up between two updates.
+        /// Determines whether at least one of a set of keys was up during
+        /// the the current update.
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was up.</returns>
@@ -339,7 +351,8 @@ namespace AssignmentThree
         }
 
         /// <summary>
-        /// Determines whether at least one of a set of keys was up between two updates.
+        /// Determines whether at least one of a set of keys was up during the current
+        /// update.
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was up.</returns>
@@ -368,10 +381,10 @@ namespace AssignmentThree
         /// <summary>
         /// Determines whether the specified action occurred.
         /// </summary>
-        /// <param name="action">The action button/key to check.</param>
+        /// <param name="action">The action buttons/keys to check.</param>
         /// <param name="type">The type of action for which to check.</param>
         /// <returns></returns>
-        public bool ActionOccurred(InputAction action, InputActionType type)
+        public bool ActionOccurred(ref InputAction action, InputActionType type)
         {
             switch(type)
             {
@@ -406,7 +419,7 @@ namespace AssignmentThree
             if (!_actions.TryGetValue(action, out actual))
                 throw new ArgumentException("InputManager.ActionOccurred: No action with name " + action + " found.");
 
-            return ActionOccurred(actual, type);
+            return ActionOccurred(ref actual, type);
         }
 
         /// <summary>
@@ -434,16 +447,16 @@ namespace AssignmentThree
         /// <returns>Whether the exit key or button was pressed.</returns>
         public bool ExitWasPressed()
         {
-            return ActionOccurred(_exit, InputActionType.Pressed);
+            return ActionOccurred(ref _exit, InputActionType.Pressed);
         }
 
         /// <summary>
-        /// Determines whether the pause button was pressed.
+        /// Determines whether the pause button/key was pressed.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Whether the pause button/key was pressed.</returns>
         public bool PauseWasPressed()
         {
-            return ActionOccurred(_pause, InputActionType.Pressed);
+            return ActionOccurred(ref _pause, InputActionType.Pressed);
         }
 
         // Reset the input states

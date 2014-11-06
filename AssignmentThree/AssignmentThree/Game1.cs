@@ -22,9 +22,13 @@ namespace AssignmentThree
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        public const float DAYTIME_AMBIENCE = 0.4f;
+        public const float NIGHTTIME_AMBIENCE = -0.9f;
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        #region Maze Variables
         Labyrinth lab;
 
         List<Room> rooms;
@@ -34,20 +38,27 @@ namespace AssignmentThree
         List<Plane> eastWalls;
         List<Plane> ceilWalls;
         List<Plane> floorWalls;
+        #endregion
 
         Cube myCube;
         BasicEffect effect;
-        Effect sceneEffect;
         float angleHorz;
         float angleVert;
         Vector3 position;
         Camera camera;
+
+        #region Lighting Variables
+        Effect sceneEffect;
+        float currentAmbience = DAYTIME_AMBIENCE;
+        #endregion
+        #region Textures
         Texture2D box;
         Texture2D boxRed;
         Texture2D boxBlue;
         Texture2D boxGreen;
         Texture2D boxPurple;
         Texture2D boxYellow;
+        #endregion
 
         InputManager inputMgr;
 
@@ -119,6 +130,8 @@ namespace AssignmentThree
             inputMgr.AddNamedAction("move_back", new InputAction(Keys.S, Buttons.DPadRight));
 
             inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
+
+            inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.B));
             #endregion
             base.Initialize();
         }
@@ -279,6 +292,9 @@ namespace AssignmentThree
                 position = lab.GetPlayerSpawn();
             }
 
+            if (inputMgr.ActionOccurred("change_ambience", InputActionType.Pressed))
+                currentAmbience = currentAmbience == DAYTIME_AMBIENCE ? NIGHTTIME_AMBIENCE : DAYTIME_AMBIENCE;
+
             // Mouse movement
             inputMgr.GetMouseDiff(out d);
             angleHorz += d.X * 0.2f;
@@ -290,11 +306,7 @@ namespace AssignmentThree
             //if (angleVert > 2 * Math.PI) angleVert = 0;
         }
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Draw(GameTime gameTime)
+        private void DrawSceneBasic()
         {
             GraphicsDevice.Clear(Color.Black);
 
@@ -354,7 +366,68 @@ namespace AssignmentThree
                 effect.World = Matrix.CreateTranslation(wall.position + offset);
                 wall.RenderShape(GraphicsDevice, effect);
             }
+        }
 
+        private void DrawSceneLit()
+        {
+            GraphicsDevice.Clear(Color.Black);
+            sceneEffect.Parameters["ViewProjection"].SetValue(camera.view * camera.proj);
+            sceneEffect.Parameters["AmbientLightingFactor"].SetValue(currentAmbience);
+
+            Vector3 offset = new Vector3(6, 0, -6);
+
+            foreach (Plane wall in northWalls)
+            {
+                sceneEffect.Parameters["BoxTexture"].SetValue(box);
+                sceneEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(wall.position + offset));
+                wall.RenderShape(GraphicsDevice, sceneEffect);
+            }
+
+            foreach (Plane wall in southWalls)
+            {
+                sceneEffect.Parameters["BoxTexture"].SetValue(boxBlue);
+                sceneEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(wall.position + offset));
+                wall.RenderShape(GraphicsDevice, sceneEffect);
+            }
+
+            foreach (Plane wall in westWalls)
+            {
+                sceneEffect.Parameters["BoxTexture"].SetValue(boxRed);
+                sceneEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(wall.position + offset));
+                wall.RenderShape(GraphicsDevice, sceneEffect);
+                
+            }
+
+            foreach (Plane wall in eastWalls)
+            {
+                sceneEffect.Parameters["BoxTexture"].SetValue(boxGreen);
+                sceneEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(wall.position + offset));
+                wall.RenderShape(GraphicsDevice, sceneEffect);
+            }
+
+            foreach (Plane wall in ceilWalls)
+            {
+                sceneEffect.Parameters["BoxTexture"].SetValue(boxYellow);
+                sceneEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(wall.position + offset));
+                wall.RenderShape(GraphicsDevice, sceneEffect);
+            }
+
+            foreach (Plane wall in floorWalls)
+            {
+                sceneEffect.Parameters["BoxTexture"].SetValue(boxPurple);
+                sceneEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(wall.position + offset));
+                wall.RenderShape(GraphicsDevice, sceneEffect);
+            }
+        }
+
+        /// <summary>
+        /// This is called when the game should draw itself.
+        /// </summary>
+        /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.Black);
+            DrawSceneLit();
             //foreach (Room room in rooms)
             //{
             //    //effect.AmbientLightColor = alt ? new Vector3(1.0f, 1.0f, 0.0f) : new Vector3(0.0f, 1.0f, 1.0f);

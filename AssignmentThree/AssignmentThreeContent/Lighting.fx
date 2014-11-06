@@ -1,51 +1,79 @@
 float4x4 World;
-float4x4 View;
-float4x4 Projection;
+float4x4 ViewProjection;
 
-// TODO: add effect parameters here.
+// The ambient lighthing intensity. Must be a value between -1 and 1 (inclusive).
+float AmbientLightingFactor;
+
+// The wall texture and a sampler to sample its values
+
+Texture2D BoxTexture;
+sampler AmbientSampler = sampler_state { 
+											texture = <BoxTexture>; 
+											magfilter = LINEAR; 
+											minfilter = LINEAR; 
+											mipfilter = LINEAR; 
+											AddressU = clamp; 
+											AddressV = clamp;
+									   };
 
 // The input to the ambient lighting vertex shader.
 struct AMBIENT_VS_IN
 {
-    float4 Position : POSITION0;
-	float4 Texture  : TEXTURE0;
-	//float4 
+    float4 Position  : POSITION0;
+	float4 Normal    : NORMAL0;
+	float2 TexCoords : TEXCOORD0;
 };
 
 // The output from the ambient lighting vertex shader.
 struct AMBIENT_VS_OUT
 {
-    float4 Position : POSITION0;
-
-    // TODO: add vertex shader outputs such as colors and texture
-    // coordinates here. These values will automatically be interpolated
-    // over the triangle, and provided as input to your pixel shader.
+    float4 Position  : POSITION0;
+	float4 Normal    : TEXCOORD0;
+	float2 TexCoords : TEXCOORD1;
 };
 
 // The output from the ambient lighting pixel shader.
 struct AMBIENT_PS_OUT
 {
-	float4 Color : COLOR0;
+	float4 Colour : COLOR0;
 };
 
+/**
+ * The vertex shader for the AmbientLighthing technique.
+ *
+ * Gets the ambient lighthing intensity and adds a given amount of
+ * white to each vertex's colour value to simulate "night" or "day".
+ * May be moved to the pixel shader later for more interesting effects.
+ */
 AMBIENT_VS_OUT AmbientVertexShader(AMBIENT_VS_IN input)
 {
-    AMBIENT_VS_OUT output;
+    AMBIENT_VS_OUT output = (AMBIENT_VS_OUT)0;
 
-    float4 worldPosition = mul(input.Position, World);
-    float4 viewPosition = mul(worldPosition, View);
-    output.Position = mul(viewPosition, Projection);
+	// Computed in the pre-shader (i.e., on the CPU)
+	float4x4 preWorldViewProjection = mul(World, ViewProjection);
 
-    // TODO: add your vertex shader code here.
+	output.Position = mul(input.Position, preWorldViewProjection);
+	output.Normal = input.Normal;
+	output.TexCoords = input.TexCoords;
 
     return output;
 }
 
+/**
+ * The pixel shader for the AmbientLighting technique.
+ *
+ * Currently, this just assigns the colour that was calculated by the
+ * interpolator, since ambient lighting is basically just raising/darkening
+ * brightness.
+ */
 AMBIENT_PS_OUT AmbientPixelShader(AMBIENT_VS_OUT input)
 {
-    // TODO: add your pixel shader code here.
-	AMBIENT_PS_OUT Output;
-	Output.Color = 1;
+    // Might customise this later, but for now, vertex shading should
+	// be fine for ambient lighting
+	AMBIENT_PS_OUT Output = (AMBIENT_PS_OUT)0;
+	float4 baseColour = tex2D(AmbientSampler, input.TexCoords);
+	Output.Colour.rgb = baseColour.rgb + (baseColour.rgb * AmbientLightingFactor);
+
 	return Output;
 }
 
