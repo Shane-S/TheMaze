@@ -1,0 +1,4 @@
+*/*.cache
+AssignmentThree/AssignmentThree/bin/*
+AssignmentThree/AssignmentThree/obj/*
+*.suo
