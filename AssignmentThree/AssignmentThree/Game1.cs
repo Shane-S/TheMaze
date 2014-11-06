@@ -11,6 +11,12 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AssignmentThree
 {
+    #region Vertex Format
+    public struct VertexColorPositionNormal
+    {
+
+    }
+    #endregion
     /// <summary>
     /// This is the main type for your game
     /// </summary>
@@ -41,6 +47,7 @@ namespace AssignmentThree
         Texture2D boxGreen;
         Texture2D boxPurple;
         Texture2D boxYellow;
+        Effect sceneEffect;
 
         KeyboardState oldKeyboardState;
         MouseState oldMouseState;
@@ -74,9 +81,6 @@ namespace AssignmentThree
 
             camera = new Camera();
 
-            effect.Projection = camera.proj;
-            effect.View = camera.view;
-
             myCube = new Cube();
             myCube.size = new Vector3(3, 3, 3);
             myCube.position = new Vector3(0, 0, 0);
@@ -109,6 +113,7 @@ namespace AssignmentThree
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            sceneEffect = Content.Load<Effect>("Lighting");
 
             box = Content.Load<Texture2D>("wooden-crate");
             boxRed = Content.Load<Texture2D>("wooden-crate-red");
@@ -277,7 +282,7 @@ namespace AssignmentThree
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
 
             effect.World = Matrix.Identity;
