@@ -43,6 +43,7 @@ namespace AssignmentThree
         Texture2D boxYellow;
 
         KeyboardState oldKeyboardState;
+        MouseState oldMouseState;
 
         public Game1()
         {
@@ -71,7 +72,7 @@ namespace AssignmentThree
             
             Matrix V = Matrix.CreateTranslation(0f, 0f, -10f);
 
-            camera = new Camera(new Vector3(0f, 0f, -10f), 0, 0, graphics);
+            camera = new Camera();
 
             effect.Projection = camera.proj;
             effect.View = camera.view;
@@ -135,23 +136,21 @@ namespace AssignmentThree
         protected override void Update(GameTime gameTime)
         {
             GetInput();
+
             HandleCollisions();
 
             camera.Update(position, angleHorz, angleVert, graphics);
-
-            angleVert = 0;
-            angleHorz = 0;
-
-            Matrix R = Matrix.Identity;
-            Matrix T = Matrix.CreateTranslation(0.0f, 0f, 5f);
-            Matrix S = Matrix.Identity;
-
-            effect.World = S * R * T;
-            effect.View = camera.view;
-            effect.Projection = camera.proj;
-            effect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(0,0,1.0f));
-
+            
             base.Update(gameTime);
+        }
+
+        private void MoveCamera(Vector3 move)
+        {
+            Matrix rot = Matrix.CreateRotationY(MathHelper.ToRadians(angleHorz));
+
+            move = Vector3.Transform(move, rot);
+
+            position += move;
         }
 
         private void HandleCollisions()
@@ -239,22 +238,35 @@ namespace AssignmentThree
             if (GamePad.GetState(PlayerIndex.One).DPad.Down == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Down))
                 angleVert = angleVert - 0.03f;
             if (GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.W))
-                position += Vector3.Transform(new Vector3(0, 0, 0.2f), camera.rotationMatrix);
+                MoveCamera(new Vector3(0, 0, 0.2f));
             if (GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.S))
-                position += Vector3.Transform(new Vector3(0, 0, -0.2f), camera.rotationMatrix);
+                MoveCamera(new Vector3(0, 0, -0.2f));
             if (GamePad.GetState(PlayerIndex.One).DPad.Left == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.A))
-                position += Vector3.Transform(new Vector3(0.2f, 0, 0), camera.rotationMatrix);
+                MoveCamera(new Vector3(0.2f, 0, 0));
             if (GamePad.GetState(PlayerIndex.One).DPad.Right == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.D))
-                position += Vector3.Transform(new Vector3(-0.2f, 0, 0), camera.rotationMatrix);
+                MoveCamera(new Vector3(-0.2f, 0, 0));
             if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || keyboardState.IsKeyDown(Keys.Home))
             {
                 angleHorz = 0;
                 angleVert = 0;
                 position = lab.GetPlayerSpawn();
             }
+
+            // Mouse movement
+            MouseState currentMouseState = Mouse.GetState();
+            if ((currentMouseState.X != oldMouseState.X) || (currentMouseState.Y != oldMouseState.Y))
+            {
+                int dx = oldMouseState.X - currentMouseState.X;
+                int dy = oldMouseState.Y - currentMouseState.Y;
+                angleHorz += dx * 0.2f;
+                angleVert -= dy * 0.2f;
+            }
+
+            Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
+            oldMouseState = Mouse.GetState();
             
-            if (angleHorz > 2 * Math.PI) angleHorz = 0;
-            if (angleVert > 2 * Math.PI) angleVert = 0;
+            //if (angleHorz > 2 * Math.PI) angleHorz = 0;
+            //if (angleVert > 2 * Math.PI) angleVert = 0;
 
             oldKeyboardState = keyboardState;
         }
@@ -266,6 +278,12 @@ namespace AssignmentThree
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+
+
+            effect.World = Matrix.Identity;
+            effect.View = camera.view;
+            effect.Projection = camera.proj;
+            effect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(0, 0, 1.0f));
 
             // TODO: Add your drawing code here
             myCube.RenderShape(GraphicsDevice, effect);
