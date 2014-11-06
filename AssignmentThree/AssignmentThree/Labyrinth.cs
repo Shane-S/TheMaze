@@ -19,6 +19,7 @@ namespace AssignmentThree
         int finish;
         int width;
         int height;
+        public float size;
         Cell[] labyrinth;
         LabyrinthGenerator generator;
 
@@ -149,6 +150,19 @@ namespace AssignmentThree
             start = spawnIndex;
         }
 
+        public Vector3 GetPlayerSpawn()
+        {
+            Vector3 spawn = new Vector3(0, 0, 0);
+
+            Cell cell = labyrinth[start];
+
+            spawn.X = cell.x * size + size/2;
+            spawn.Z = -((cell.y * size) + size / 2);
+
+            return spawn;
+
+        }
+
         public void SetFinish(int portalIndex)
         {
             finish = portalIndex;
@@ -162,6 +176,7 @@ namespace AssignmentThree
         public List<Room> GenerateRooms(int size, ref List<Plane> northWalls, ref List<Plane> southWalls, ref List<Plane> eastWalls, ref List<Plane> westWalls, ref List<Plane> ceils, ref List<Plane> floors)
         {
             List<Room> rooms = new List<Room>();
+            this.size = size * 2;
 
             for (int i = 0; i < (height * width); i++)
             {
@@ -176,6 +191,50 @@ namespace AssignmentThree
             }
 
             return rooms;
+        }
+
+        public Cell GetCellFromPosition(Vector3 position)
+        {
+            float z = Math.Abs(position.Z);
+            float x = Math.Abs(position.X);
+
+            if (z < 0)
+            {
+                z = 0;
+            }
+            else if (z >= height * size)
+            {
+                z = height * size;
+            }
+
+            if (x < 0)
+            {
+                x = 0;
+            }
+            else if (x >= width * size)
+            {
+                x = width * size;
+            }
+
+            int index = (int)(Math.Floor(z / size) * width + Math.Floor(x / size));
+            
+            if (index < 0)
+            {
+                Console.WriteLine("Y: " + Math.Floor(-position.Z / size) * width);
+                Console.WriteLine("X: " + Math.Floor(position.X / size));
+                return labyrinth[0];
+            }
+            else if (index >= width * height)
+            {
+                Console.WriteLine("Y: " + Math.Floor(-position.Z / size) * width);
+                Console.WriteLine("X: " + Math.Floor(position.X / size));
+                return labyrinth[(width * height) - 1];
+            }
+            else
+            {
+                return labyrinth[index];
+            }
+
         }
     }
 }

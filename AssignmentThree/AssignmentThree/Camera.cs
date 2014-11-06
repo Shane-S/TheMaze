@@ -26,7 +26,7 @@ namespace AssignmentThree
         public Matrix view;
         public Matrix proj;
 
-        public Camera(Vector3 avatarPosition, float avatarYaw, GraphicsDeviceManager graphics)
+        public Camera(Vector3 avatarPosition, float avatarYaw, float avatarPitch, GraphicsDeviceManager graphics)
         {
             nearClip = 1.0f;
             farClip = 2000.0f;
@@ -35,7 +35,7 @@ namespace AssignmentThree
             cameraReference = new Vector3(0, 0, 1);
             avatarHeadOffset = new Vector3(0, 0, 0);
 
-            rotationMatrix = Matrix.CreateRotationY(avatarYaw);
+            rotationMatrix = Matrix.CreateRotationY(avatarYaw) * Matrix.CreateRotationX(avatarPitch);
             headOffset = Vector3.Transform(avatarHeadOffset, rotationMatrix);
             cameraPosition = avatarPosition + headOffset;
             Vector3 transformedReference = Vector3.Transform(cameraReference, rotationMatrix);
@@ -50,9 +50,9 @@ namespace AssignmentThree
                 nearClip, farClip);
         }
 
-        public void Update(Vector3 avatarPosition, float avatarYaw, GraphicsDeviceManager graphics)
+        public void Update(Vector3 avatarPosition, float avatarYaw, float avatarPitch, GraphicsDeviceManager graphics)
         {
-            rotationMatrix = Matrix.CreateRotationY(avatarYaw);
+            rotationMatrix *= Matrix.CreateRotationY(avatarYaw) * Matrix.CreateRotationX(avatarPitch);
             headOffset = Vector3.Transform(avatarHeadOffset, rotationMatrix);
             cameraPosition = avatarPosition + headOffset;
             Vector3 transformedReference = Vector3.Transform(cameraReference, rotationMatrix);
