@@ -38,6 +38,7 @@ namespace AssignmentThree
         List<Plane> eastWalls;
         List<Plane> ceilWalls;
         List<Plane> floorWalls;
+        private bool collisionOn;
         #endregion
 
         Cube myCube;
@@ -109,6 +110,8 @@ namespace AssignmentThree
             ceilWalls = new List<Plane>();
             floorWalls = new List<Plane>();
 
+            collisionOn = true;
+
             rooms = lab.GenerateRooms(6, ref northWalls, ref southWalls, ref eastWalls, ref westWalls, ref ceilWalls, ref floorWalls);
             #endregion
             #region Initialise Player
@@ -124,17 +127,19 @@ namespace AssignmentThree
             inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, Buttons.DPadUp));
             inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, Buttons.DPadDown));
 
-            inputMgr.AddNamedAction("move_left", new InputAction(Keys.A, Buttons.DPadRight));
-            inputMgr.AddNamedAction("move_right", new InputAction(Keys.D, Buttons.DPadLeft));
-            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.W, Buttons.DPadLeft));
-            inputMgr.AddNamedAction("move_back", new InputAction(Keys.S, Buttons.DPadRight));
+            inputMgr.AddNamedAction("move_left", new InputAction(Keys.F, Buttons.DPadDown));
+            inputMgr.AddNamedAction("move_right", new InputAction(Keys.H, Buttons.DPadRight));
+            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.T, Buttons.DPadUp));
+            inputMgr.AddNamedAction("move_back", new InputAction(Keys.G, Buttons.DPadLeft));
 
             inputMgr.AddNamedAction("zoom_in", new InputAction(Keys.Z, Buttons.B));
             inputMgr.AddNamedAction("zoom_out", new InputAction(Keys.X, Buttons.A));
 
+            inputMgr.AddNamedAction("collision_toggle", new InputAction(Keys.W, Buttons.Y));
+
             inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
 
-            inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.B));
+            inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.X));
             #endregion
             base.Initialize();
         }
@@ -175,7 +180,10 @@ namespace AssignmentThree
         {
             GetInput();
 
-            HandleCollisions();
+            if (collisionOn)
+            {
+                HandleCollisions();
+            }
 
             camera.Update(position, angleHorz, angleVert, graphics);
             
@@ -350,6 +358,11 @@ namespace AssignmentThree
             if (inputMgr.ActionOccurred("zoom_out", InputActionType.Down))
             {
                 camera.ZoomOut();
+            }
+
+            if (inputMgr.ActionOccurred("collision_toggle", InputActionType.Pressed))
+            {
+                collisionOn = !collisionOn;
             }
 
             if (inputMgr.ActionOccurred("change_ambience", InputActionType.Pressed))
