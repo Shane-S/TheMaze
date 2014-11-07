@@ -23,7 +23,7 @@ namespace AssignmentThree
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         public const float DAYTIME_AMBIENCE = 0.4f;
-        public const float NIGHTTIME_AMBIENCE = -0.9f;
+        public const float NIGHTTIME_AMBIENCE = -0.94f;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -152,7 +152,6 @@ namespace AssignmentThree
             boxGreen = Content.Load<Texture2D>("wooden-crate-green");
             boxPurple = Content.Load<Texture2D>("wooden-crate-purple");
             boxYellow = Content.Load<Texture2D>("wooden-crate-yellow");
-            // TODO: use this.Content to load your game content here
         }
 
         /// <summary>
@@ -218,42 +217,89 @@ namespace AssignmentThree
             if (position.X < limit)
             {
                 position.X = limit;
-                //velocity.X = -velocity.X * GameConstants::Physics::GroundRestitution;
             }
             limit = maxBoundCell.X - radius;
             if (position.X > limit)
             {
                 position.X = limit;
-                //velocity.x = -velocity.x + GameConstants::Physics::GroundRestitution;
             }
             limit = minBoundCell.Y + radius;
             if (position.Y < limit)  // above floor
             {
                 position.Y = limit;
-                //velocity.y = -velocity.y * GameConstants::Physics::GroundRestitution;
             }
             limit = maxBoundCell.Y - radius;
             if (position.Y > limit) // below floor
             {
                 position.Y = limit;
-                //velocity.y = -velocity.y * GameConstants::Physics::GroundRestitution;
             }
             limit = minBoundCell.Z + radius;
             if (position.Z > -limit)
             {
                 position.Z = -limit;
-                //velocity.z = -velocity.z * GameConstants::Physics::GroundRestitution;
             }
             limit = maxBoundCell.Z - radius;
             if (position.Z < -limit)
             {
                 position.Z = -limit;
-                //velocity.z = -velocity.z * GameConstants::Physics::GroundRestitution;
             }
 
-            // Detect walls of current cell
-            //m_player->SetPos(Vector3<double>(position.x, position.y, position.z));
-            //m_player->SetVelocity(Vector3<double>(velocity.x, velocity.y, velocity.z));
+            // corner checks
+            if (!cell.northWall && !cell.eastWall)
+            {
+                Vector3 pos = position;
+                pos.X += 0.3f;
+                pos.Z += 0.3f;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x + 1, cell.y - 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + 6);
+                    position.X = cell.x * 12 + 6;
+                }
+            }
+
+            if (!cell.northWall && !cell.westWall)
+            {
+                Vector3 pos = position;
+                pos.X -= 0.3f;
+                pos.Z += 0.3f;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x - 1, cell.y - 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + 6);
+                    position.X = cell.x * 12 + 6;
+                }
+            }
+
+            if (!cell.southWall && !cell.eastWall)
+            {
+                Vector3 pos = position;
+                pos.X += 0.3f;
+                pos.Z -= 0.3f;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x + 1, cell.y + 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + 6);
+                    position.X = cell.x * 12 + 6;
+                }
+            }
+
+            if (!cell.southWall && !cell.westWall)
+            {
+                Vector3 pos = position;
+                pos.X -= 0.3f;
+                pos.Z -= 0.3f;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x - 1, cell.y + 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + 6);
+                    position.X = cell.x * 12 + 6;
+                }
+            }
         }
 
         public void GetInput()
@@ -310,7 +356,10 @@ namespace AssignmentThree
         {
             GraphicsDevice.Clear(Color.Black);
 
-
+            effect.FogEnabled = true;
+            effect.FogColor = Color.Tomato.ToVector3();
+            effect.FogStart = 0f;
+            effect.FogEnd = 55f;
             effect.World = Matrix.Identity;
             effect.View = camera.view;
             effect.Projection = camera.proj;
@@ -373,7 +422,7 @@ namespace AssignmentThree
             GraphicsDevice.Clear(Color.Black);
             sceneEffect.Parameters["ViewProjection"].SetValue(camera.view * camera.proj);
             sceneEffect.Parameters["AmbientLightingFactor"].SetValue(currentAmbience);
-
+            
             Vector3 offset = new Vector3(6, 0, -6);
 
             foreach (Plane wall in northWalls)
@@ -428,13 +477,6 @@ namespace AssignmentThree
         {
             GraphicsDevice.Clear(Color.Black);
             DrawSceneLit();
-            //foreach (Room room in rooms)
-            //{
-            //    //effect.AmbientLightColor = alt ? new Vector3(1.0f, 1.0f, 0.0f) : new Vector3(0.0f, 1.0f, 1.0f);
-            //    effect.World = Matrix.CreateTranslation(room.position);
-            //    room.RenderShape(GraphicsDevice, effect);
-            //    alt = !alt;
-            //}
 
             base.Draw(gameTime);
         }
