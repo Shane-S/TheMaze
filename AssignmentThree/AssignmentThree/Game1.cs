@@ -193,7 +193,7 @@ namespace AssignmentThree
             Cell cell = lab.GetCellFromPosition(position);
             Vector3 minBoundCell = new Vector3(0,0,0);
             Vector3 maxBoundCell = new Vector3(10 * 12, 12, 10 * 12);
-            float radius = 2;
+            float radius = 1.3f;
 
 
             if (cell.northWall)
@@ -248,56 +248,56 @@ namespace AssignmentThree
             if (!cell.northWall && !cell.eastWall)
             {
                 Vector3 pos = position;
-                pos.X += 0.3f;
-                pos.Z += 0.3f;
+                pos.X += radius;
+                pos.Z += radius;
                 Cell otherCell = lab.GetCellFromPosition(pos);
                 Cell cornerCell = lab.GetCellFromIndex(cell.x + 1, cell.y - 1);
                 if (otherCell == cornerCell)
                 {
-                    position.Z = -(cell.y * 12 + 6);
-                    position.X = cell.x * 12 + 6;
+                    position.Z = -(cell.y * 12 + radius);
+                    position.X = cell.x * 12 + (12 - radius);
                 }
             }
 
             if (!cell.northWall && !cell.westWall)
             {
                 Vector3 pos = position;
-                pos.X -= 0.3f;
-                pos.Z += 0.3f;
+                pos.X -= radius;
+                pos.Z += radius;
                 Cell otherCell = lab.GetCellFromPosition(pos);
                 Cell cornerCell = lab.GetCellFromIndex(cell.x - 1, cell.y - 1);
                 if (otherCell == cornerCell)
                 {
-                    position.Z = -(cell.y * 12 + 6);
-                    position.X = cell.x * 12 + 6;
+                    position.Z = -(cell.y * 12 + radius);
+                    position.X = cell.x * 12 + radius;
                 }
             }
 
             if (!cell.southWall && !cell.eastWall)
             {
                 Vector3 pos = position;
-                pos.X += 0.3f;
-                pos.Z -= 0.3f;
+                pos.X += radius;
+                pos.Z -= radius;
                 Cell otherCell = lab.GetCellFromPosition(pos);
                 Cell cornerCell = lab.GetCellFromIndex(cell.x + 1, cell.y + 1);
                 if (otherCell == cornerCell)
                 {
-                    position.Z = -(cell.y * 12 + 6);
-                    position.X = cell.x * 12 + 6;
+                    position.Z = -(cell.y * 12 + (12 - radius));
+                    position.X = cell.x * 12 + (12 - radius);
                 }
             }
 
             if (!cell.southWall && !cell.westWall)
             {
                 Vector3 pos = position;
-                pos.X -= 0.3f;
-                pos.Z -= 0.3f;
+                pos.X -= radius;
+                pos.Z -= radius;
                 Cell otherCell = lab.GetCellFromPosition(pos);
                 Cell cornerCell = lab.GetCellFromIndex(cell.x - 1, cell.y + 1);
                 if (otherCell == cornerCell)
                 {
-                    position.Z = -(cell.y * 12 + 6);
-                    position.X = cell.x * 12 + 6;
+                    position.Z = -(cell.y * 12 + (12 - radius));
+                    position.X = cell.x * 12 + radius;
                 }
             }
         }
