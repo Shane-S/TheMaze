@@ -13,81 +13,89 @@ namespace AssignmentThree
 {
     class Camera
     {
-        Vector3 avatarHeadOffset;
-        public Matrix xRotationMatrix;
-        public Matrix rotationMatrix;
-        Vector3 headOffset; // height of the camera
-        Vector3 cameraPosition;
-        Vector3 cameraLookat; // the position the camera is looking at.
-        Vector3 cameraReference; // The direction the camera points without rotation.
-        double viewAngle;
-        float nearClip;
-        float farClip;
+        public Vector3 AvatarHeadOffset;
+        public Vector3 CameraPosition;
 
-        public Matrix view;
-        public Matrix proj;
+        /// <summary>
+        /// The direction in which the camera is looking (unit vector).
+        /// </summary>
+        public Vector3 CameraLookAt;
 
-        public Camera()
+        /// <summary>
+        /// The direction the camera points without rotation.
+        /// </summary>
+        public Vector3 CameraReference;
+
+        /// <summary>
+        /// The screen's aspect ratio.
+        /// </summary>
+        public float AspectRatio;
+
+        /// <summary>
+        /// The angle 
+        /// </summary>
+        public double ViewAngle;
+
+        /// <summary>
+        /// The near clipping plane.
+        /// </summary>
+        public float NearClip;
+
+        /// <summary>
+        /// The far clipping plane.
+        /// </summary>
+        public float FarClip;
+
+        /// <summary>
+        /// The view matrix.
+        /// </summary>
+        public Matrix View;
+
+        /// <summary>
+        /// The projection matrix.
+        /// </summary>
+        public Matrix Projection;
+
+        public Camera(GraphicsDevice graphics)
         {
-            nearClip = 1.0f;
-            farClip = 2000.0f;
-            viewAngle = Math.PI / 4;
+            // Projection
+            Viewport viewport = graphics.Viewport;
+            AspectRatio = (float)viewport.Width / (float)viewport.Height;
+            ViewAngle = Math.PI / 4;         
 
-            cameraReference = new Vector3(0, 0, 1);
-            avatarHeadOffset = new Vector3(0, 0, 0);
+            NearClip = 1.0f;
+            FarClip = 2000.0f;
 
-            //xRotationMatrix = Matrix.CreateRotationY(avatarYaw);
-            //rotationMatrix = xRotationMatrix * Matrix.CreateRotationX(avatarPitch);
-            //headOffset = Vector3.Transform(avatarHeadOffset, rotationMatrix);
-            //cameraPosition = avatarPosition + headOffset;
-            //Vector3 transformedReference = Vector3.Transform(cameraReference, rotationMatrix);
-            //cameraLookat = transformedReference + cameraPosition;
+            Projection = Matrix.CreatePerspectiveFieldOfView((float)ViewAngle, AspectRatio,
+                NearClip, FarClip);
 
-            //view = Matrix.CreateLookAt(cameraPosition, cameraLookat, new Vector3(0.0f, 1.0f, 0.0f));
-
-            //Viewport viewport = graphics.GraphicsDevice.Viewport;
-            //float aspectRatio = (float)viewport.Width / (float)viewport.Height;
-
-            //proj = Matrix.CreatePerspectiveFieldOfView((float)viewAngle, aspectRatio,
-            //    nearClip, farClip);
+            CameraReference = new Vector3(0, 0, 1);
+            AvatarHeadOffset = new Vector3(0, 0, 0);
         }
 
-        public void Update(Vector3 position, float avatarYaw, float avatarPitch, GraphicsDeviceManager graphics)
-        {
-            //xRotationMatrix = Matrix.CreateRotationY(avatarYaw);
-            //rotationMatrix = xRotationMatrix * Matrix.CreateRotationX(avatarPitch);
-            //headOffset = Vector3.Transform(avatarHeadOffset, rotationMatrix);
-            //cameraPosition = avatarPosition + headOffset;
-            //Vector3 transformedReference = Vector3.Transform(cameraReference, rotationMatrix);
-            //cameraLookat = transformedReference + cameraPosition;
+        /// <summary>
+        /// Updates the camera's position and viewing properties.
+        /// </summary>
+        /// <param name="position">The avatar's position.</param>
+        /// <param name="avatarYaw">The avatar's yaw (rotation about the X axis).</param>
+        /// <param name="avatarPitch">The avatar's pitch (rotation about the Y axis).</param>
+        public void Update(Vector3 position, float avatarYaw, float avatarPitch)
+        {           
+            Matrix rotation;
+            Matrix.CreateFromYawPitchRoll(MathHelper.ToRadians(avatarYaw), MathHelper.ToRadians(avatarPitch), 0f, out rotation);
 
-            //view = Matrix.CreateLookAt(cameraPosition, cameraLookat, new Vector3(0.0f, 1.0f, 0.0f));
+            // Update the camera's position
+            CameraPosition = position + AvatarHeadOffset;
 
-            //Viewport viewport = graphics.GraphicsDevice.Viewport;
-            //float aspectRatio = (float)viewport.Width / (float)viewport.Height;
+            // Create LookAt vector by rotating the z-axis
+            Vector3.Transform(ref CameraReference, ref rotation, out CameraLookAt);
 
-            //proj = Matrix.CreatePerspectiveFieldOfView((float)viewAngle, aspectRatio,
-            //    nearClip, farClip);
-
-            // Create reference vector
-            Vector3 lookAt = new Vector3(0f, 0f, 1f);
-
-            // Rotate the Vector
-            lookAt = Vector3.Transform(lookAt, Matrix.CreateRotationX(MathHelper.ToRadians(avatarPitch)));
-            lookAt = Vector3.Transform(lookAt, Matrix.CreateRotationY(MathHelper.ToRadians(avatarYaw)));
-
-            // View
-            view = Matrix.CreateLookAt(
+            // Update the View vector
+            View = Matrix.CreateLookAt(
                 position,
-                position + lookAt,
+                position + CameraLookAt,
                 Vector3.Up
             );
-
-            // Projection
-            Viewport viewport = graphics.GraphicsDevice.Viewport;
-            float aspectRatio = (float)viewport.Width / (float)viewport.Height;
-            proj = Matrix.CreatePerspectiveFieldOfView((float)viewAngle, aspectRatio,
-                nearClip, farClip);
         }
     }
 }

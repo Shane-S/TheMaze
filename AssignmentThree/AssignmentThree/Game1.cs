@@ -11,19 +11,13 @@ using Microsoft.Xna.Framework.Media;
 
 namespace AssignmentThree
 {
-    #region Vertex Format
-    public struct VertexColorPositionNormal
-    {
-
-    }
-    #endregion
     /// <summary>
     /// This is the main type for your game
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         public const float DAYTIME_AMBIENCE = 0.4f;
-        public const float NIGHTTIME_AMBIENCE = -0.9f;
+        public const float NIGHTTIME_AMBIENCE = -0.94f;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -50,6 +44,7 @@ namespace AssignmentThree
         #region Lighting Variables
         Effect sceneEffect;
         float currentAmbience = DAYTIME_AMBIENCE;
+        Flashlight light;
         #endregion
         #region Textures
         Texture2D box;
@@ -84,19 +79,12 @@ namespace AssignmentThree
             effect.DirectionalLight0.Direction = Vector3.Normalize(Vector3.One);
             effect.LightingEnabled = true;
             #endregion
-            #region Initialise Camer & Viewing
+            #region Initialise Camera & Viewing
             Matrix projection = Matrix.CreatePerspectiveFieldOfView((float)Math.PI / 4.0f,
                                 (float)this.Window.ClientBounds.Width / (float)this.Window.ClientBounds.Height, 1f, 10f);
             
             Matrix V = Matrix.CreateTranslation(0f, 0f, -10f);
-
-            camera = new Camera();
-            #endregion
-            #region Initialise Cube
-            myCube = new Cube();
-            myCube.size = new Vector3(3, 3, 3);
-            myCube.position = new Vector3(0, 0, 0);
-            myCube.BuildShape();
+            camera = new Camera(graphics.GraphicsDevice);
             #endregion
             #region Generate Labyrinth
             lab = new Labyrinth(10, 10);
@@ -116,22 +104,29 @@ namespace AssignmentThree
             angleVert = 0;
             position = lab.GetPlayerSpawn();
             #endregion
+            #region Initialise Cube
+            myCube = new Cube();
+            myCube.size = new Vector3(3, 3, 3);
+            myCube.position = position;
+            myCube.BuildShape();
+            #endregion
             #region Initialise Input Manager
             inputMgr = new InputManager();
 
-            inputMgr.AddNamedAction("pan_left", new InputAction(Keys.Left, Buttons.DPadLeft));
-            inputMgr.AddNamedAction("pan_right", new InputAction(Keys.Right, Buttons.DPadRight));
-            inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, Buttons.DPadUp));
-            inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, Buttons.DPadDown));
+            inputMgr.AddNamedAction("pan_left", new InputAction(Keys.Left, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("pan_right", new InputAction(Keys.Right, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, InputAction.NO_ACTION_BUTTON));
 
-            inputMgr.AddNamedAction("move_left", new InputAction(Keys.A, Buttons.DPadRight));
-            inputMgr.AddNamedAction("move_right", new InputAction(Keys.D, Buttons.DPadLeft));
-            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.W, Buttons.DPadLeft));
-            inputMgr.AddNamedAction("move_back", new InputAction(Keys.S, Buttons.DPadRight));
+            inputMgr.AddNamedAction("move_left", new InputAction(Keys.A, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_right", new InputAction(Keys.D, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.W, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_back", new InputAction(Keys.S, InputAction.NO_ACTION_BUTTON));
 
             inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
 
             inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.B));
+            inputMgr.AddNamedAction("power_flashlight", new InputAction(Keys.Space, Buttons.RightShoulder));
             #endregion
             base.Initialize();
         }
@@ -145,6 +140,8 @@ namespace AssignmentThree
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             sceneEffect = Content.Load<Effect>("Lighting");
+
+            light = new Flashlight(70f, 5f, 10f, Color.Wheat, sceneEffect);
 
             box = Content.Load<Texture2D>("wooden-crate");
             boxRed = Content.Load<Texture2D>("wooden-crate-red");
@@ -175,7 +172,7 @@ namespace AssignmentThree
 
             HandleCollisions();
 
-            camera.Update(position, angleHorz, angleVert, graphics);
+            camera.Update(position, angleHorz, angleVert);
             
             base.Update(gameTime);
         }
@@ -189,10 +186,11 @@ namespace AssignmentThree
             position += move;
         }
 
+        
         private void HandleCollisions()
         {
             Cell cell = lab.GetCellFromPosition(position);
-            Vector3 minBoundCell = new Vector3(0,0,0);
+            Vector3 minBoundCell = new Vector3(0, 0, 0);
             Vector3 maxBoundCell = new Vector3(10 * 12, 12, 10 * 12);
             float radius = 2;
 
@@ -259,31 +257,19 @@ namespace AssignmentThree
         public void GetInput()
         {
             Vector2 d;
-            inputMgr.Update(GamePad.GetState(PlayerIndex.One), Keyboard.GetState(), Mouse.GetState());
+            inputMgr.Update();
 
             // Allows the game to exit
             if (inputMgr.ExitWasPressed())
                 this.Exit();
 
-            #region Check for Camera Panning
-            if (inputMgr.ActionOccurred("pan_left", InputActionType.Down))
-                angleHorz = angleHorz + 2f;
-            if (inputMgr.ActionOccurred("pan_right", InputActionType.Down))
-                angleHorz = angleHorz - 2f;
-            if (inputMgr.ActionOccurred("pan_up", InputActionType.Down)) 
-                angleVert = angleVert - 2f;
-            if (inputMgr.ActionOccurred("pan_down", InputActionType.Down))
-                angleVert = angleVert + 2f;
-            #endregion
-            #region Check for Player Movement
-            if (inputMgr.ActionOccurred("move_forward", InputActionType.Down))
-                MoveCamera(new Vector3(0, 0, 0.2f));
-            if (inputMgr.ActionOccurred("move_back", InputActionType.Down))
-                MoveCamera(new Vector3(0, 0, -0.2f));
-            if (inputMgr.ActionOccurred("move_right", InputActionType.Down))
-                MoveCamera(new Vector3(-0.2f, 0, 0));
-            if (inputMgr.ActionOccurred("move_left", InputActionType.Down))
-                MoveCamera(new Vector3(0.2f, 0, 0));
+            DoCameraPanning();
+            DoPlayerMovement();
+            #region Check for Lighting Changes
+            if (inputMgr.ActionOccurred("change_ambience", InputActionType.Pressed))
+                currentAmbience = currentAmbience == DAYTIME_AMBIENCE ? NIGHTTIME_AMBIENCE : DAYTIME_AMBIENCE;
+            if (inputMgr.ActionOccurred("power_flashlight", InputActionType.Pressed))
+                light.power();
             #endregion
             if (inputMgr.ActionOccurred("reset", InputActionType.Pressed))
             {
@@ -291,9 +277,6 @@ namespace AssignmentThree
                 angleVert = 0;
                 position = lab.GetPlayerSpawn();
             }
-
-            if (inputMgr.ActionOccurred("change_ambience", InputActionType.Pressed))
-                currentAmbience = currentAmbience == DAYTIME_AMBIENCE ? NIGHTTIME_AMBIENCE : DAYTIME_AMBIENCE;
 
             // Mouse movement
             inputMgr.GetMouseDiff(out d);
@@ -306,14 +289,56 @@ namespace AssignmentThree
             //if (angleVert > 2 * Math.PI) angleVert = 0;
         }
 
+        /// <summary>
+        /// Moves the player according to player input.
+        /// </summary>
+        private void DoPlayerMovement()
+        {
+            float leftStickX = inputMgr.CurGamepadState.ThumbSticks.Left.X;
+            float leftStickY = inputMgr.CurGamepadState.ThumbSticks.Left.Y;
+
+            if (inputMgr.ActionOccurred("move_forward", InputActionType.Down))
+                MoveCamera(new Vector3(0, 0, 0.2f));
+            if (inputMgr.ActionOccurred("move_back", InputActionType.Down))
+                MoveCamera(new Vector3(0, 0, -0.2f));
+            if (inputMgr.ActionOccurred("move_right", InputActionType.Down))
+                MoveCamera(new Vector3(-0.2f, 0, 0));
+            if (inputMgr.ActionOccurred("move_left", InputActionType.Down))
+                MoveCamera(new Vector3(0.2f, 0, 0));
+
+            if (leftStickX != 0 || leftStickY != 0)
+                MoveCamera(new Vector3(leftStickX, 0, leftStickY));
+        }
+
+        /// <summary>
+        /// Pans the camera according to player input.
+        /// </summary>
+        private void DoCameraPanning()
+        {
+            float rightStickX = inputMgr.CurGamepadState.ThumbSticks.Right.X;
+            float rightStickY = inputMgr.CurGamepadState.ThumbSticks.Right.Y;
+
+            if (inputMgr.ActionOccurred("pan_left", InputActionType.Down))
+                angleHorz = angleHorz + 2f;
+            if (inputMgr.ActionOccurred("pan_right", InputActionType.Down))
+                angleHorz = angleHorz - 2f;
+            if (inputMgr.ActionOccurred("pan_up", InputActionType.Down))
+                angleVert = angleVert - 2f;
+            if (inputMgr.ActionOccurred("pan_down", InputActionType.Down))
+                angleVert = angleVert + 2f;
+
+            angleVert += rightStickY * 2;
+            angleHorz += rightStickX * 2;
+        }
+
         private void DrawSceneBasic()
         {
             GraphicsDevice.Clear(Color.Black);
 
 
             effect.World = Matrix.Identity;
-            effect.View = camera.view;
-            effect.Projection = camera.proj;
+            effect.View = camera.View;
+            effect.Projection = camera.Projection;
             effect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(0, 0, 1.0f));
 
             // TODO: Add your drawing code here
@@ -371,9 +396,14 @@ namespace AssignmentThree
         private void DrawSceneLit()
         {
             GraphicsDevice.Clear(Color.Black);
-            sceneEffect.Parameters["ViewProjection"].SetValue(camera.view * camera.proj);
+            Matrix reflected;
+            Microsoft.Xna.Framework.Plane p = new Microsoft.Xna.Framework.Plane(Vector3.UnitX, 0);
+            Matrix.CreateReflection(ref p, out reflected);
+            sceneEffect.CurrentTechnique = sceneEffect.Techniques["Technique1"];
+            sceneEffect.Parameters["ViewProjection"].SetValue(camera.View * camera.Projection);
             sceneEffect.Parameters["AmbientLightingFactor"].SetValue(currentAmbience);
-
+            sceneEffect.Parameters["LightPos"].SetValue(camera.CameraPosition);
+            sceneEffect.Parameters["CameraLookAt"].SetValue(camera.CameraLookAt);
             Vector3 offset = new Vector3(6, 0, -6);
 
             foreach (Plane wall in northWalls)

@@ -45,6 +45,16 @@ namespace AssignmentThree
     public struct InputAction
     {
         /// <summary>
+        /// Denotes that an input action has no corresponding button.
+        /// </summary>
+        public const Buttons NO_ACTION_BUTTON = (Buttons)(-1);
+
+        /// <summary>
+        /// Denotes that an input action has no corresponding key.
+        /// </summary>
+        public const Keys NO_ACTION_KEY = (Keys)(-1);
+
+        /// <summary>
         /// The key corresponding to the action.
         /// </summary>
         public Keys[] ActionKeys;
@@ -57,25 +67,27 @@ namespace AssignmentThree
         /// <summary>
         /// Constructs a new InputAction with the specified values.
         /// </summary>
-        /// <param name="ActionKey">The key corresponding to this action.</param>
-        /// <param name="ActionButton">The button corresponding to this action.</param>
+        /// <param name="ActionKey">The set of keys associated with this action. Use null if there are no associated keys.</param>
+        /// <param name="ActionButton">The set of buttons associated with this action. Use null if there are no associated buttons.</param>
         public InputAction(Keys[] ActionKeys, Buttons[] ActionButtons)
         {
             this.ActionKeys = ActionKeys;
             this.ActionButtons = ActionButtons;
         }
 
+        /// <summary>
+        /// Constructs a new InputAction with the specified key and button.
+        /// </summary>
+        /// <param name="ActionKey">The key associated with this action or InputAction.NO_ACTION_KEY if there isn't one.</param>
+        /// <param name="ActionButton">The button associated with this action or InputAction.NO_ACTION_BUTTON if there isn't one.</param>
         public InputAction(Keys ActionKey, Buttons ActionButton)
-            : this(new Keys[] { ActionKey }, new Buttons[] { ActionButton })
+            : this(ActionKey == NO_ACTION_KEY ? null : new Keys[] { ActionKey }, 
+                   ActionButton == NO_ACTION_BUTTON ? null : new Buttons[] { ActionButton })
         {}
     }
 
     public class InputManager
     {
-        public const int NOT_MOVING = 0;
-        public const int MOVING_RIGHT = 1;
-        public const int MOVING_LEFT = -1;
-
         public static readonly InputAction DEFAULT_ESCAPE = new InputAction(Keys.Escape, Buttons.Back);
         public static readonly InputAction DEFAULT_PAUSE = new InputAction(Keys.Home, Buttons.Start);
         /// <summary>
@@ -133,6 +145,36 @@ namespace AssignmentThree
         /// </summary>
         public InputAction Pause { get { return _pause; } set { _pause = value; } }
 
+        /// <summary>
+        /// Gets the mouse's state during the second-most recent update.
+        /// </summary>
+        public MouseState PrevMouseState { get { return _prevMState; } }
+
+        /// <summary>
+        /// Gets the mouse's state as of the most recent update.
+        /// </summary>
+        public MouseState CurMouseState { get { return _curMState; } }
+
+        /// <summary>
+        /// Gets the keyboard's state during the second-most recent update..
+        /// </summary>
+        public KeyboardState PrevKeyboardState { get { return _prevKState; } }
+
+        /// <summary>
+        /// Gets the keyboard's state as of the most recent update.
+        /// </summary>
+        public KeyboardState CurKeyboardState { get { return _curKState; } }
+
+        /// <summary>
+        /// Gets the gamepad's state during the second-most recent update.
+        /// </summary>
+        public GamePadState PrevGamepadState { get { return _prevGState; } }
+        
+        /// <summary>
+        /// Gets the gamepad's state as of the most recent update.
+        /// </summary>
+        public GamePadState CurGamepadState { get { return _curGState; } }
+
         public InputManager()
             : this(DEFAULT_PAUSE, DEFAULT_ESCAPE)
         { }
@@ -140,8 +182,8 @@ namespace AssignmentThree
         /// <summary>
         /// Create an InputManager with the specified escape key and button.
         /// </summary>
-        /// <param name="escapeKey"></param>
-        /// <param name="escapeButton"></param>
+        /// <param name="pause">The InputAction which should pause the game.</param>
+        /// <param name="exit">The InputAction which should exit the game.</param>
         public InputManager(InputAction pause, InputAction exit)
             : base()
         {        
@@ -155,14 +197,14 @@ namespace AssignmentThree
         /// </summary>
         /// <param name="gState">The current GamePadState for a given player.</param>
         /// <param name="kState">The current KeyboardState.</param>
-        public void Update(GamePadState gState, KeyboardState kState, MouseState mState)
+        public void Update()
         {
             _prevKState = _curKState;
             _prevGState = _curGState;
             _prevMState = _curMState;
-            _curKState = kState;
-            _curGState = gState;
-            _curMState = mState;
+            _curKState = Keyboard.GetState();
+            _curGState = GamePad.GetState(PlayerIndex.One);
+            _curMState = Mouse.GetState();
         }
 
         /// <summary>
@@ -203,6 +245,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the keys was pressed.</returns>
         public bool KeyWasPressed(Keys[] k)
         {
+            if (k == null)
+                return false;
+
             int i;
             for (i = 0; i < k.Length; i++)
             {
@@ -220,6 +265,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the buttons was pressed.</returns>
         public bool ButtonWasPressed(Buttons[] b)
         {
+            if (b == null)
+                return false;
+
             int i;
             for (i = 0; i < b.Length; i++)
             {
@@ -237,6 +285,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the keys was held.</returns>
         public bool KeyHeld(Keys[] k)
         {
+            if (k == null)
+                return false;
+
             int i;
             for (i = 0; i < k.Length; i++)
             {
@@ -254,6 +305,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the buttons was held down.</returns>
         public bool ButtonHeld(Buttons[] b)
         {
+            if (b == null)
+                return false;
+
             int i;
             for (i = 0; i < b.Length; i++)
             {
@@ -272,6 +326,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the keys was still up.</returns>
         public bool KeyStillUp(Keys[] k)
         {
+            if (k == null)
+                return false;
+
             int i;
             for (i = 0; i < k.Length; i++)
             {
@@ -289,6 +346,9 @@ namespace AssignmentThree
         /// <returns>Whether the buttons was up.</returns>
         public bool ButtonStillUp(Buttons[] b)
         {
+            if (b == null)
+                return false;
+
             int i;
             for (i = 0; i < b.Length; i++)
             {
@@ -307,6 +367,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the keys was up.</returns>
         public bool KeyIsDown(Keys[] k)
         {
+            if (k == null)
+                return false;
+
             int i;
             for(i = 0; i < k.Length; i++)
             {
@@ -324,6 +387,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the keys was up.</returns>
         public bool KeyIsUp(Keys[] k)
         {
+            if (k == null)
+                return false;
+
             int i;
             for (i = 0; i < k.Length; i++)
             {
@@ -341,6 +407,9 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the keys was up.</returns>
         public bool ButtonIsUp(Buttons[] b)
         {
+            if (b == null)
+                return false;
+
             int i;
             for (i = 0; i < b.Length; i++)
             {
@@ -358,6 +427,8 @@ namespace AssignmentThree
         /// <returns>Whether at least one of the keys was up.</returns>
         public bool ButtonIsDown(Buttons[] b)
         {
+            if (b == null)
+                return false;
             int i;
             for (i = 0; i < b.Length; i++)
             {
