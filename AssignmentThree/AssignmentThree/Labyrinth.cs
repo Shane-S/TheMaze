@@ -193,6 +193,16 @@ namespace AssignmentThree
             return rooms;
         }
 
+        public Cell GetCellFromIndex(int x, int y)
+        {
+            int index = (y * width + x);
+
+            if (index >= width * height)
+                return null;
+
+            return labyrinth[index];
+        }
+
         public Cell GetCellFromPosition(Vector3 position)
         {
             float z = Math.Abs(position.Z);

@@ -32,6 +32,7 @@ namespace AssignmentThree
         List<Plane> eastWalls;
         List<Plane> ceilWalls;
         List<Plane> floorWalls;
+        private bool collisionOn;
         #endregion
 
         Cube myCube;
@@ -97,6 +98,8 @@ namespace AssignmentThree
             ceilWalls = new List<Plane>();
             floorWalls = new List<Plane>();
 
+            collisionOn = true;
+
             rooms = lab.GenerateRooms(6, ref northWalls, ref southWalls, ref eastWalls, ref westWalls, ref ceilWalls, ref floorWalls);
             #endregion
             #region Initialise Player
@@ -117,16 +120,22 @@ namespace AssignmentThree
             inputMgr.AddNamedAction("pan_right", new InputAction(Keys.Right, InputAction.NO_ACTION_BUTTON));
             inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, InputAction.NO_ACTION_BUTTON));
             inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, InputAction.NO_ACTION_BUTTON));
+            
+            inputMgr.AddNamedAction("zoom_in", new InputAction(Keys.Z, Buttons.B));
+            inputMgr.AddNamedAction("zoom_out", new InputAction(Keys.X, Buttons.A));
+            inputMgr.AddNamedAction("zoom_reset", new InputAction(Keys.C, Buttons.RightShoulder));
 
-            inputMgr.AddNamedAction("move_left", new InputAction(Keys.A, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("move_right", new InputAction(Keys.D, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.W, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("move_back", new InputAction(Keys.S, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_left", new InputAction(Keys.F, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_right", new InputAction(Keys.H, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.T, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_back", new InputAction(Keys.G, InputAction.NO_ACTION_BUTTON));
+
+            inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.X));
+            inputMgr.AddNamedAction("power_flashlight", new InputAction(Keys.Space, Buttons.RightShoulder));
+
+            inputMgr.AddNamedAction("collision_toggle", new InputAction(Keys.W, Buttons.Y));
 
             inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
-
-            inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.B));
-            inputMgr.AddNamedAction("power_flashlight", new InputAction(Keys.Space, Buttons.RightShoulder));
             #endregion
             base.Initialize();
         }
@@ -149,7 +158,6 @@ namespace AssignmentThree
             boxGreen = Content.Load<Texture2D>("wooden-crate-green");
             boxPurple = Content.Load<Texture2D>("wooden-crate-purple");
             boxYellow = Content.Load<Texture2D>("wooden-crate-yellow");
-            // TODO: use this.Content to load your game content here
         }
 
         /// <summary>
@@ -170,7 +178,10 @@ namespace AssignmentThree
         {
             GetInput();
 
-            HandleCollisions();
+            if (collisionOn)
+            {
+                HandleCollisions();
+            }
 
             camera.Update(position, angleHorz, angleVert);
             
@@ -192,7 +203,7 @@ namespace AssignmentThree
             Cell cell = lab.GetCellFromPosition(position);
             Vector3 minBoundCell = new Vector3(0, 0, 0);
             Vector3 maxBoundCell = new Vector3(10 * 12, 12, 10 * 12);
-            float radius = 2;
+            float radius = 1.3f;
 
 
             if (cell.northWall)
@@ -216,42 +227,89 @@ namespace AssignmentThree
             if (position.X < limit)
             {
                 position.X = limit;
-                //velocity.X = -velocity.X * GameConstants::Physics::GroundRestitution;
             }
             limit = maxBoundCell.X - radius;
             if (position.X > limit)
             {
                 position.X = limit;
-                //velocity.x = -velocity.x + GameConstants::Physics::GroundRestitution;
             }
             limit = minBoundCell.Y + radius;
             if (position.Y < limit)  // above floor
             {
                 position.Y = limit;
-                //velocity.y = -velocity.y * GameConstants::Physics::GroundRestitution;
             }
             limit = maxBoundCell.Y - radius;
             if (position.Y > limit) // below floor
             {
                 position.Y = limit;
-                //velocity.y = -velocity.y * GameConstants::Physics::GroundRestitution;
             }
             limit = minBoundCell.Z + radius;
             if (position.Z > -limit)
             {
                 position.Z = -limit;
-                //velocity.z = -velocity.z * GameConstants::Physics::GroundRestitution;
             }
             limit = maxBoundCell.Z - radius;
             if (position.Z < -limit)
             {
                 position.Z = -limit;
-                //velocity.z = -velocity.z * GameConstants::Physics::GroundRestitution;
             }
 
-            // Detect walls of current cell
-            //m_player->SetPos(Vector3<double>(position.x, position.y, position.z));
-            //m_player->SetVelocity(Vector3<double>(velocity.x, velocity.y, velocity.z));
+            // corner checks
+            if (!cell.northWall && !cell.eastWall)
+            {
+                Vector3 pos = position;
+                pos.X += radius;
+                pos.Z += radius;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x + 1, cell.y - 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + radius);
+                    position.X = cell.x * 12 + (12 - radius);
+                }
+            }
+
+            if (!cell.northWall && !cell.westWall)
+            {
+                Vector3 pos = position;
+                pos.X -= radius;
+                pos.Z += radius;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x - 1, cell.y - 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + radius);
+                    position.X = cell.x * 12 + radius;
+                }
+            }
+
+            if (!cell.southWall && !cell.eastWall)
+            {
+                Vector3 pos = position;
+                pos.X += radius;
+                pos.Z -= radius;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x + 1, cell.y + 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + (12 - radius));
+                    position.X = cell.x * 12 + (12 - radius);
+                }
+            }
+
+            if (!cell.southWall && !cell.westWall)
+            {
+                Vector3 pos = position;
+                pos.X -= radius;
+                pos.Z -= radius;
+                Cell otherCell = lab.GetCellFromPosition(pos);
+                Cell cornerCell = lab.GetCellFromIndex(cell.x - 1, cell.y + 1);
+                if (otherCell == cornerCell)
+                {
+                    position.Z = -(cell.y * 12 + (12 - radius));
+                    position.X = cell.x * 12 + radius;
+                }
+            }
         }
 
         public void GetInput()
@@ -276,6 +334,27 @@ namespace AssignmentThree
                 angleHorz = 0;
                 angleVert = 0;
                 position = lab.GetPlayerSpawn();
+                camera.ResetZoom();
+            }
+
+            if (inputMgr.ActionOccurred("zoom_in", InputActionType.Down))
+            {
+                camera.ZoomIn();
+            }
+
+            if (inputMgr.ActionOccurred("zoom_out", InputActionType.Down))
+            {
+                camera.ZoomOut();
+            }
+
+            if(inputMgr.ActionOccurred("zoom_reset", InputActionType.Pressed))
+            {
+                camera.ResetZoom();
+            }
+
+            if (inputMgr.ActionOccurred("collision_toggle", InputActionType.Pressed))
+            {
+                collisionOn = !collisionOn;
             }
 
             // Mouse movement
@@ -285,8 +364,6 @@ namespace AssignmentThree
 
             Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
             inputMgr.UpdateMouseState(Mouse.GetState());
-            //if (angleHorz > 2 * Math.PI) angleHorz = 0;
-            //if (angleVert > 2 * Math.PI) angleVert = 0;
         }
 
         /// <summary>
@@ -335,7 +412,10 @@ namespace AssignmentThree
         {
             GraphicsDevice.Clear(Color.Black);
 
-
+            effect.FogEnabled = true;
+            effect.FogColor = Color.Tomato.ToVector3();
+            effect.FogStart = 0f;
+            effect.FogEnd = 55f;
             effect.World = Matrix.Identity;
             effect.View = camera.View;
             effect.Projection = camera.Projection;
@@ -404,6 +484,7 @@ namespace AssignmentThree
             sceneEffect.Parameters["AmbientLightingFactor"].SetValue(currentAmbience);
             sceneEffect.Parameters["LightPos"].SetValue(camera.CameraPosition);
             sceneEffect.Parameters["CameraLookAt"].SetValue(camera.CameraLookAt);
+
             Vector3 offset = new Vector3(6, 0, -6);
 
             foreach (Plane wall in northWalls)
@@ -458,13 +539,6 @@ namespace AssignmentThree
         {
             GraphicsDevice.Clear(Color.Black);
             DrawSceneLit();
-            //foreach (Room room in rooms)
-            //{
-            //    //effect.AmbientLightColor = alt ? new Vector3(1.0f, 1.0f, 0.0f) : new Vector3(0.0f, 1.0f, 1.0f);
-            //    effect.World = Matrix.CreateTranslation(room.position);
-            //    room.RenderShape(GraphicsDevice, effect);
-            //    alt = !alt;
-            //}
 
             base.Draw(gameTime);
         }
