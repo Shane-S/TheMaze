@@ -129,6 +129,9 @@ namespace AssignmentThree
             inputMgr.AddNamedAction("move_forward", new InputAction(Keys.W, Buttons.DPadLeft));
             inputMgr.AddNamedAction("move_back", new InputAction(Keys.S, Buttons.DPadRight));
 
+            inputMgr.AddNamedAction("zoom_in", new InputAction(Keys.Z, Buttons.B));
+            inputMgr.AddNamedAction("zoom_out", new InputAction(Keys.X, Buttons.A));
+
             inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
 
             inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.B));
@@ -336,6 +339,17 @@ namespace AssignmentThree
                 angleHorz = 0;
                 angleVert = 0;
                 position = lab.GetPlayerSpawn();
+                camera.ResetZoom();
+            }
+
+            if (inputMgr.ActionOccurred("zoom_in", InputActionType.Down))
+            {
+                camera.ZoomIn();
+            }
+
+            if (inputMgr.ActionOccurred("zoom_out", InputActionType.Down))
+            {
+                camera.ZoomOut();
             }
 
             if (inputMgr.ActionOccurred("change_ambience", InputActionType.Pressed))

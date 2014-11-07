@@ -23,6 +23,10 @@ namespace AssignmentThree
         double viewAngle;
         float nearClip;
         float farClip;
+        float zoomFactor;
+        float zoomAdjustment;
+        float zoomMax;
+        float zoomMin;
 
         public Matrix view;
         public Matrix proj;
@@ -32,6 +36,10 @@ namespace AssignmentThree
             nearClip = 1.0f;
             farClip = 2000.0f;
             viewAngle = Math.PI / 4;
+            zoomFactor = 1f;
+            zoomAdjustment = 0.05f;
+            zoomMax = 2;
+            zoomMin = 0.40f;
 
             cameraReference = new Vector3(0, 0, 1);
             avatarHeadOffset = new Vector3(0, 0, 0);
@@ -83,11 +91,38 @@ namespace AssignmentThree
                 Vector3.Up
             );
 
+            view *= Matrix.CreateScale(new Vector3(zoomFactor, zoomFactor, 1));
+
             // Projection
             Viewport viewport = graphics.GraphicsDevice.Viewport;
             float aspectRatio = (float)viewport.Width / (float)viewport.Height;
             proj = Matrix.CreatePerspectiveFieldOfView((float)viewAngle, aspectRatio,
                 nearClip, farClip);
+        }
+
+        public void ZoomIn()
+        {
+            zoomFactor += zoomAdjustment;
+
+            if (Math.Abs(zoomFactor) > zoomMax)
+            {
+                zoomFactor = zoomMax;
+            }
+        }
+
+        public void ZoomOut()
+        {
+            zoomFactor -= zoomAdjustment;
+
+            if (Math.Abs(zoomFactor) < zoomMin)
+            {
+                zoomFactor = zoomMin;
+            }
+        }
+
+        public void ResetZoom()
+        {
+            zoomFactor = 1;
         }
     }
 }
