@@ -117,26 +117,26 @@ namespace AssignmentThree
             #region Initialise Input Manager
             inputMgr = new InputManager();
 
-            inputMgr.AddNamedAction("pan_left", new InputAction(Keys.Left, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("pan_right", new InputAction(Keys.Right, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("pan_left", new InputAction(0, Keys.Left, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("pan_right", new InputAction(0, Keys.Right, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("pan_up", new InputAction(0, Keys.Up, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("pan_down", new InputAction(0, Keys.Down, InputAction.NO_ACTION_BUTTON));
             
-            inputMgr.AddNamedAction("zoom_in", new InputAction(Keys.Z, Buttons.B));
-            inputMgr.AddNamedAction("zoom_out", new InputAction(Keys.X, Buttons.A));
-            inputMgr.AddNamedAction("zoom_reset", new InputAction(Keys.C, Buttons.RightShoulder));
+            inputMgr.AddNamedAction("zoom_in", new InputAction(0, Keys.Z, Buttons.B));
+            inputMgr.AddNamedAction("zoom_out", new InputAction(InputAction.SHIFT, Keys.Z, Buttons.A));
+            inputMgr.AddNamedAction("zoom_reset", new InputAction(0, Keys.C, Buttons.RightShoulder));
 
-            inputMgr.AddNamedAction("move_left", new InputAction(Keys.F, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("move_right", new InputAction(Keys.H, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("move_forward", new InputAction(Keys.T, InputAction.NO_ACTION_BUTTON));
-            inputMgr.AddNamedAction("move_back", new InputAction(Keys.G, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_left", new InputAction(0, Keys.F, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_right", new InputAction(0, Keys.H, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_forward", new InputAction(0, Keys.T, InputAction.NO_ACTION_BUTTON));
+            inputMgr.AddNamedAction("move_back", new InputAction(0, Keys.G, InputAction.NO_ACTION_BUTTON));
 
-            inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.X));
-            inputMgr.AddNamedAction("power_flashlight", new InputAction(Keys.Space, Buttons.LeftShoulder));
-            inputMgr.AddNamedAction("fog_toggle", new InputAction(Keys.V, Buttons.DPadUp));
-            inputMgr.AddNamedAction("collision_toggle", new InputAction(Keys.W, Buttons.Y));
+            inputMgr.AddNamedAction("change_ambience", new InputAction(0, Keys.B, Buttons.X));
+            inputMgr.AddNamedAction("power_flashlight", new InputAction(0, Keys.Space, Buttons.LeftShoulder));
+            inputMgr.AddNamedAction("fog_toggle", new InputAction(0, Keys.V, Buttons.DPadUp));
+            inputMgr.AddNamedAction("collision_toggle", new InputAction(0, Keys.W, Buttons.Y));
 
-            inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
+            inputMgr.AddNamedAction("reset", new InputAction(0, Keys.Home, Buttons.Start));
             #endregion
             base.Initialize();
         }

@@ -55,9 +55,29 @@ namespace AssignmentThree
         public const Keys NO_ACTION_KEY = (Keys)(-1);
 
         /// <summary>
+        /// The shift key must be pressed for this event to register.
+        /// </summary>
+        public const int SHIFT = 1;
+
+        /// <summary>
+        /// The alt key must be pressed for this event to register.
+        /// </summary>
+        public const int ALT = 2;
+
+        /// <summary>
+        /// The ctrl key must be pressed for this event to register.
+        /// </summary>
+        public const int CTRL = 4;
+
+        /// <summary>
         /// The key corresponding to the action.
         /// </summary>
         public Keys[] ActionKeys;
+
+        /// <summary>
+        /// A mask of 
+        /// </summary>
+        public int[] AcceleratorMask;
 
         /// <summary>
         /// The button corresponding to the action.
@@ -67,29 +87,35 @@ namespace AssignmentThree
         /// <summary>
         /// Constructs a new InputAction with the specified values.
         /// </summary>
+        /// <param name="AcceleratorMask">A bitwise-OR'd mask of accelerators (SHIFT, ALT, and CTRL) that must be pressed for this action
+        /// to occur. 0 means that none of them must happen.</param>
         /// <param name="ActionKey">The set of keys associated with this action. Use null if there are no associated keys.</param>
         /// <param name="ActionButton">The set of buttons associated with this action. Use null if there are no associated buttons.</param>
-        public InputAction(Keys[] ActionKeys, Buttons[] ActionButtons)
+        public InputAction(int[] AcceleratorMask, Keys[] ActionKeys, Buttons[] ActionButtons)
         {
             this.ActionKeys = ActionKeys;
             this.ActionButtons = ActionButtons;
+            this.AcceleratorMask = AcceleratorMask;
         }
 
         /// <summary>
         /// Constructs a new InputAction with the specified key and button.
         /// </summary>
+        /// <param name="AcceleratorMask">A bitwise-OR'd mask of accelerators (SHIFT, ALT, and CTRL) that must be pressed for this action
+        /// to occur. 0 means that none of them must happen.</param>
         /// <param name="ActionKey">The key associated with this action or InputAction.NO_ACTION_KEY if there isn't one.</param>
         /// <param name="ActionButton">The button associated with this action or InputAction.NO_ACTION_BUTTON if there isn't one.</param>
-        public InputAction(Keys ActionKey, Buttons ActionButton)
-            : this(ActionKey == NO_ACTION_KEY ? null : new Keys[] { ActionKey }, 
+        public InputAction(int AcceleratorMask, Keys ActionKey, Buttons ActionButton)
+            : this(new int[] {AcceleratorMask},
+                   ActionKey == NO_ACTION_KEY ? null : new Keys[] { ActionKey }, 
                    ActionButton == NO_ACTION_BUTTON ? null : new Buttons[] { ActionButton })
         {}
     }
 
     public class InputManager
     {
-        public static readonly InputAction DEFAULT_ESCAPE = new InputAction(Keys.Escape, Buttons.Back);
-        public static readonly InputAction DEFAULT_PAUSE = new InputAction(Keys.Home, Buttons.Start);
+        public static readonly InputAction DEFAULT_ESCAPE = new InputAction(0, Keys.Escape, Buttons.Back);
+        public static readonly InputAction DEFAULT_PAUSE = new InputAction(0, Keys.Home, Buttons.Start);
         /// <summary>
         /// The keyboard state in the last update.
         /// </summary>
@@ -104,6 +130,11 @@ namespace AssignmentThree
         /// The keyboard state in the current update.
         /// </summary>
         private KeyboardState _curKState;
+
+        /// <summary>
+        /// The current combination of shift, alt and control.
+        /// </summary>
+        private int _curAccelMask;
 
         /// <summary>
         /// The gamepad state in the current update.
@@ -166,6 +197,11 @@ namespace AssignmentThree
         public KeyboardState CurKeyboardState { get { return _curKState; } }
 
         /// <summary>
+        /// Gets the current combination of shift, alt and control keys that are down.
+        /// </summary>
+        public int CurrentAcceleratorMask { get { return _curAccelMask; } }
+
+        /// <summary>
         /// Gets the gamepad's state during the second-most recent update.
         /// </summary>
         public GamePadState PrevGamepadState { get { return _prevGState; } }
@@ -203,6 +239,7 @@ namespace AssignmentThree
             _prevGState = _curGState;
             _prevMState = _curMState;
             _curKState = Keyboard.GetState();
+            _curAccelMask = GetCurrentAcceleratorMask(_curKState);
             _curGState = GamePad.GetState(PlayerIndex.One);
             _curMState = Mouse.GetState();
         }
@@ -241,9 +278,11 @@ namespace AssignmentThree
         /// Determines whether at least one of a set of keys was pressed between the
         /// last update and the current one.
         /// </summary>
+        /// <param name="acceleratorMask">The combination of shift, alt and ctrl that must be down for this
+        /// action to have occurred.</param>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was pressed.</returns>
-        public bool KeyWasPressed(Keys[] k)
+        public bool KeyWasPressed(int[] acceleratorMask, Keys[] k)
         {
             if (k == null)
                 return false;
@@ -251,8 +290,11 @@ namespace AssignmentThree
             int i;
             for (i = 0; i < k.Length; i++)
             {
-                if (_prevKState.IsKeyDown(k[i]) && _curKState.IsKeyUp(k[i]))
-                    break;
+                if (_curKState.IsKeyUp(k[i]) && _prevKState.IsKeyDown(k[i]))
+                {
+                    if (_curAccelMask == acceleratorMask[i])
+                        break;
+                }
             }
             return i != k.Length;
         }
@@ -283,7 +325,7 @@ namespace AssignmentThree
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was held.</returns>
-        public bool KeyHeld(Keys[] k)
+        public bool KeyHeld(int[] acceleratorMask, Keys[] k)
         {
             if (k == null)
                 return false;
@@ -291,8 +333,11 @@ namespace AssignmentThree
             int i;
             for (i = 0; i < k.Length; i++)
             {
-                if (_prevKState.IsKeyDown(k[i]) && _curKState.IsKeyDown(k[i]))
-                    break;
+                if (_curKState.IsKeyDown(k[i]) && _prevKState.IsKeyDown(k[i]))
+                {
+                    if (_curAccelMask == acceleratorMask[i])
+                        break;
+                }
             }
             return i != k.Length;
         }
@@ -324,7 +369,7 @@ namespace AssignmentThree
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was still up.</returns>
-        public bool KeyStillUp(Keys[] k)
+        public bool KeyStillUp(int[] acceleratorMask, Keys[] k)
         {
             if (k == null)
                 return false;
@@ -365,7 +410,7 @@ namespace AssignmentThree
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was up.</returns>
-        public bool KeyIsDown(Keys[] k)
+        public bool KeyIsDown(int[] acceleratorMask, Keys[] k)
         {
             if (k == null)
                 return false;
@@ -373,10 +418,27 @@ namespace AssignmentThree
             int i;
             for(i = 0; i < k.Length; i++)
             {
-                if (_prevKState.IsKeyDown(k[i]) || _curKState.IsKeyDown(k[i]))
-                    break;
+                // If the key is down, checks each of the accelerators in turn. If a required on is not down, then
+                // it continues to the next key
+                if (_curKState.IsKeyDown(k[i]))
+                {
+                    if(_curAccelMask == acceleratorMask[i])
+                        break;
+                }
             }
             return i != k.Length;
+        }
+
+        public int GetCurrentAcceleratorMask(KeyboardState state)
+        {
+            int currentMask = 0;
+            if (state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift))
+                currentMask |= InputAction.SHIFT;
+            if(state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl))
+                currentMask |= InputAction.CTRL;
+            if(state.IsKeyDown(Keys.LeftAlt) || state.IsKeyDown(Keys.RightAlt))
+                currentMask |= InputAction.ALT;
+            return currentMask;
         }
 
         /// <summary>
@@ -385,7 +447,7 @@ namespace AssignmentThree
         /// </summary>
         /// <param name="k">The keys to check.</param>
         /// <returns>Whether at least one of the keys was up.</returns>
-        public bool KeyIsUp(Keys[] k)
+        public bool KeyIsUp(int[] acceleratorMask, Keys[] k)
         {
             if (k == null)
                 return false;
@@ -393,7 +455,7 @@ namespace AssignmentThree
             int i;
             for (i = 0; i < k.Length; i++)
             {
-                if (_prevKState.IsKeyUp(k[i]) || _curKState.IsKeyUp(k[i]))
+                if (_curKState.IsKeyUp(k[i]))
                     break;
             }
             return i != k.Length;
@@ -459,15 +521,15 @@ namespace AssignmentThree
             switch(type)
             {
                 case InputActionType.Pressed:
-                    return KeyWasPressed(action.ActionKeys) || ButtonWasPressed(action.ActionButtons);
+                    return KeyWasPressed(action.AcceleratorMask, action.ActionKeys) || ButtonWasPressed(action.ActionButtons);
                 case InputActionType.StillDown:
-                    return KeyHeld(action.ActionKeys) || ButtonHeld(action.ActionButtons);
+                    return KeyHeld(action.AcceleratorMask, action.ActionKeys) || ButtonHeld(action.ActionButtons);
                 case InputActionType.StillUp:
-                    return KeyStillUp(action.ActionKeys) || ButtonStillUp(action.ActionButtons);
+                    return KeyStillUp(action.AcceleratorMask, action.ActionKeys) || ButtonStillUp(action.ActionButtons);
                 case InputActionType.Down:
-                    return KeyIsDown(action.ActionKeys) || ButtonIsDown(action.ActionButtons);
+                    return KeyIsDown(action.AcceleratorMask, action.ActionKeys) || ButtonIsDown(action.ActionButtons);
                 case InputActionType.Up:
-                    return KeyIsUp(action.ActionKeys) || ButtonIsUp(action.ActionButtons);
+                    return KeyIsUp(action.AcceleratorMask, action.ActionKeys) || ButtonIsUp(action.ActionButtons);
                 default:
                     throw new ArgumentException("Unknown action type " + type);
             }
