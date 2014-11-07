@@ -444,8 +444,7 @@ namespace AssignmentThree
         /// <param name="mouseDiff">A Vector2 to hold the differences.</param>
         public void GetMouseDiff(out Vector2 mouseDiff)
         {
-            mouseDiff.X = _prevMState.X - _curMState.X;
-            mouseDiff.Y = _prevMState.Y - _curMState.Y;
+            mouseDiff = new Vector2(_prevMState.X - _curMState.X, _prevMState.Y - _curMState.Y);
         }
 
 

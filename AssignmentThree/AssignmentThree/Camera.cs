@@ -13,6 +13,9 @@ namespace AssignmentThree
 {
     class Camera
     {
+        public const float FOG_FAR_CLIP = 70.0f;
+        public const float NORMAL_FAR_CLIP = 2000f;
+
         public Vector3 AvatarHeadOffset;
         public Vector3 CameraPosition;
 
@@ -74,7 +77,7 @@ namespace AssignmentThree
             ZoomMin = 0.40f;
 
             NearClip = 1.0f;
-            FarClip = 2000.0f;
+            FarClip = NORMAL_FAR_CLIP;
 
             Projection = Matrix.CreatePerspectiveFieldOfView((float)ViewAngle, AspectRatio,
                 NearClip, FarClip);

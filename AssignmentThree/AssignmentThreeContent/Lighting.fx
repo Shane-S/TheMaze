@@ -1,17 +1,24 @@
 float4x4 World;
-float4x4 ViewProjection;
+float4x4 View;
+float4x4 Projection;
 
 // The ambient lighthing intensity. Must be a value between -1 and 1 (inclusive).
 float AmbientLightingFactor;
 
-// Tutorial
+// The position of the camera and the direction in which the camera is looking
 float3 LightPos;
 float3 CameraLookAt;
+
 
 float LightDecayExponent;
 float LightDistance;
 float4 LightColour;
 float DiffuseIntensity;
+
+// Fog variables
+float FarPlane;
+float4 FogColour;
+bool FogOn;
 
 bool FlashlightOn;
 
@@ -50,9 +57,9 @@ struct AMBIENT_VS_OUT
 {
     float4 Position   : POSITION0;
 	float3 Position3D : TEXCOORD0;
-	float3 Normal     : TEXCOORD1;
-	float2 TexCoords  : TEXCOORD2;
-	float4 Colour     : COLOR0;
+	float ViewSpaceZ    : TEXCOORD1;
+	float3 Normal     : TEXCOORD2;
+	float2 TexCoords  : TEXCOORD3;
 };
 
 // The output from the ambient lighting pixel shader.
@@ -60,24 +67,6 @@ struct AMBIENT_PS_OUT
 {
 	float4 Colour : COLOR0;
 };
-
-// Contains the depth information about the scene
-//struct DEPTH_VS_OUT
-//{
-//	float4 Position: POSITION0;
-//	float
-//};
-
-// Helper functions
-float ProjectLight(float3 lightPos, float3 pos3D, float3 normal)
-{
-	// Get the direction from the light to the vertex
-	float3 lightDir = normalize(pos3D - lightPos);
-
-	// Return the projection of the direction from the vertex to the light
-	// onto the vertex's normal
-	return dot(-lightDir, normal);
-}
 
 /**
  * The vertex shader for the AmbientLighthing technique.
@@ -87,28 +76,17 @@ AMBIENT_VS_OUT AmbientVertexShader(AMBIENT_VS_IN input)
     AMBIENT_VS_OUT output = (AMBIENT_VS_OUT)0;
 
 	float4 pos = mul(input.Position, World);
+	float4 viewPos = mul(pos, View);
 
-	output.Position = mul(pos, ViewProjection);
+	output.Position = mul(viewPos, Projection);
+
 	output.TexCoords = input.TexCoords;
-	output.Normal.x = -output.Normal.x;
 	output.Normal = normalize(mul(input.Normal, (float3x3)World));
 	output.Position3D = pos;
+	output.ViewSpaceZ = -viewPos.z / FarPlane;
 	
     return output;
 }
-
-/**
- * The vertex shader for the DepthMap technique.
- *
- * Calculates the 2D position for a given pixel and stores its distance along the
- * z-axis as a value in the colour.
- */
-//DEPTH_VS_OUT DepthVertexShader(DEPTH_VS_IN input)
-//{
-//	DEPTH_VS_OUT output = (DEPTH_VS_OUT)0;
-//	// Computed in the pre-shader (i.e., on the CPU)
-//	float4x4 preWorldViewProjection = mul(World, ViewProjection);
-//}
 
 /**
  * The pixel shader for the AmbientLighting technique.
@@ -117,6 +95,9 @@ AMBIENT_VS_OUT AmbientVertexShader(AMBIENT_VS_IN input)
  */
 AMBIENT_PS_OUT AmbientPixelShader(AMBIENT_VS_OUT input)
 {
+	const float FOG_MIN = 0.5;
+	const float FOG_MAX = 0.99;
+
 	AMBIENT_PS_OUT Output = (AMBIENT_PS_OUT)0;
 	
 	// The colour of the texture at this pixel
@@ -125,6 +106,9 @@ AMBIENT_PS_OUT AmbientPixelShader(AMBIENT_VS_OUT input)
 	// Determines the brightness of the scene by adding/subtracting a fraction
 	// of the base colour to/from itself
 	float4 ambientColour = baseColour;
+
+	// The final lighting colour.
+	float4 finalColour;
 
 	// The direction from the vertex to the light
 	float3 lightDir = LightPos - input.Position3D;
@@ -143,7 +127,7 @@ AMBIENT_PS_OUT AmbientPixelShader(AMBIENT_VS_OUT input)
 
 	// Determine the brightness
 	ambientColour.rgb += ambientColour.rgb * AmbientLightingFactor;
-	Output.Colour = ambientColour;
+	finalColour = ambientColour;
 
 	if (FlashlightOn)
 	{
@@ -153,16 +137,20 @@ AMBIENT_PS_OUT AmbientPixelShader(AMBIENT_VS_OUT input)
 		// of calculating the direction from the camera separately
 		float diff = saturate(dot(normal, -lightDir));
 		float3 reflect = normalize(2 * diff * normal + lightDir);
-		Output.Colour += spotIntensity * attenuation  * LightColour * DiffuseIntensity * baseColour * diff;
+		finalColour += spotIntensity * attenuation  * LightColour * DiffuseIntensity * baseColour * diff;
+	}
+
+	Output.Colour = finalColour;
+
+	if (FogOn)
+	{
+		float space = saturate(input.ViewSpaceZ);
+		float4 fogged = lerp(finalColour, FogColour, lerp(FOG_MIN, FOG_MAX, space));
+		Output.Colour = fogged;
 	}
 
 	return Output;
 }
-
-//FLASHLIGHT_PS_OUT FlashlightPixelShader(FLASHLIGHT_VS_OUT input)
-//{
-//
-//}
 
 technique Technique1
 {

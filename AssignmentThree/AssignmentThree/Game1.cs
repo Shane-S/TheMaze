@@ -46,6 +46,7 @@ namespace AssignmentThree
         Effect sceneEffect;
         float currentAmbience = DAYTIME_AMBIENCE;
         Flashlight light;
+        bool fogOn = false;
         #endregion
         #region Textures
         Texture2D box;
@@ -131,8 +132,8 @@ namespace AssignmentThree
             inputMgr.AddNamedAction("move_back", new InputAction(Keys.G, InputAction.NO_ACTION_BUTTON));
 
             inputMgr.AddNamedAction("change_ambience", new InputAction(Keys.B, Buttons.X));
-            inputMgr.AddNamedAction("power_flashlight", new InputAction(Keys.Space, Buttons.RightShoulder));
-
+            inputMgr.AddNamedAction("power_flashlight", new InputAction(Keys.Space, Buttons.LeftShoulder));
+            inputMgr.AddNamedAction("fog_toggle", new InputAction(Keys.V, Buttons.DPadUp));
             inputMgr.AddNamedAction("collision_toggle", new InputAction(Keys.W, Buttons.Y));
 
             inputMgr.AddNamedAction("reset", new InputAction(Keys.Home, Buttons.Start));
@@ -150,7 +151,7 @@ namespace AssignmentThree
             spriteBatch = new SpriteBatch(GraphicsDevice);
             sceneEffect = Content.Load<Effect>("Lighting");
 
-            light = new Flashlight(70f, 5f, 10f, Color.Wheat, sceneEffect);
+            light = new Flashlight(70f, 5f, 30f, Color.Wheat, sceneEffect);
 
             box = Content.Load<Texture2D>("wooden-crate");
             boxRed = Content.Load<Texture2D>("wooden-crate-red");
@@ -357,6 +358,11 @@ namespace AssignmentThree
                 collisionOn = !collisionOn;
             }
 
+            if(inputMgr.ActionOccurred("fog_toggle", InputActionType.Pressed))
+            {
+                ToggleFog();
+            }
+
             // Mouse movement
             inputMgr.GetMouseDiff(out d);
             angleHorz += d.X * 0.2f;
@@ -384,7 +390,7 @@ namespace AssignmentThree
                 MoveCamera(new Vector3(0.2f, 0, 0));
 
             if (leftStickX != 0 || leftStickY != 0)
-                MoveCamera(new Vector3(leftStickX, 0, leftStickY));
+                MoveCamera(new Vector3(-leftStickX * 0.5f, 0, leftStickY * 0.5f));
         }
 
         /// <summary>
@@ -404,8 +410,17 @@ namespace AssignmentThree
             if (inputMgr.ActionOccurred("pan_down", InputActionType.Down))
                 angleVert = angleVert + 2f;
 
-            angleVert += rightStickY * 2;
-            angleHorz += rightStickX * 2;
+            angleVert -= rightStickY * 2;
+            angleHorz -= rightStickX * 2;
+        }
+
+        /// <summary>
+        /// Turns the fog effect on or off.
+        /// </summary>
+        private void ToggleFog()
+        {
+            fogOn = !fogOn;
+            camera.FarClip = fogOn ? Camera.FOG_FAR_CLIP : Camera.NORMAL_FAR_CLIP;
         }
 
         private void DrawSceneBasic()
@@ -475,15 +490,20 @@ namespace AssignmentThree
 
         private void DrawSceneLit()
         {
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.Gray);
             Matrix reflected;
             Microsoft.Xna.Framework.Plane p = new Microsoft.Xna.Framework.Plane(Vector3.UnitX, 0);
             Matrix.CreateReflection(ref p, out reflected);
             sceneEffect.CurrentTechnique = sceneEffect.Techniques["Technique1"];
-            sceneEffect.Parameters["ViewProjection"].SetValue(camera.View * camera.Projection);
+            sceneEffect.Parameters["View"].SetValue(camera.View);
+            sceneEffect.Parameters["Projection"].SetValue(camera.Projection);
             sceneEffect.Parameters["AmbientLightingFactor"].SetValue(currentAmbience);
             sceneEffect.Parameters["LightPos"].SetValue(camera.CameraPosition);
             sceneEffect.Parameters["CameraLookAt"].SetValue(camera.CameraLookAt);
+            sceneEffect.Parameters["FarPlane"].SetValue(camera.FarClip);
+            sceneEffect.Parameters["FogColour"].SetValue(Color.Gray.ToVector4());
+            sceneEffect.Parameters["FogOn"].SetValue(fogOn);
+
 
             Vector3 offset = new Vector3(6, 0, -6);
 
