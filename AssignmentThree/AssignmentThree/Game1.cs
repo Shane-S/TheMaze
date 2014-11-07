@@ -122,10 +122,10 @@ namespace AssignmentThree
             #region Initialise Input Manager
             inputMgr = new InputManager();
 
-            inputMgr.AddNamedAction("pan_left", new InputAction(Keys.Left, Buttons.DPadLeft));
-            inputMgr.AddNamedAction("pan_right", new InputAction(Keys.Right, Buttons.DPadRight));
-            inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, Buttons.DPadUp));
-            inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, Buttons.DPadDown));
+            inputMgr.AddNamedAction("pan_left", new InputAction(Keys.Left, Buttons.LeftShoulder));
+            inputMgr.AddNamedAction("pan_right", new InputAction(Keys.Right, Buttons.LeftShoulder));
+            inputMgr.AddNamedAction("pan_up", new InputAction(Keys.Up, Buttons.LeftShoulder));
+            inputMgr.AddNamedAction("pan_down", new InputAction(Keys.Down, Buttons.LeftShoulder));
 
             inputMgr.AddNamedAction("move_left", new InputAction(Keys.F, Buttons.DPadDown));
             inputMgr.AddNamedAction("move_right", new InputAction(Keys.H, Buttons.DPadRight));
@@ -372,6 +372,27 @@ namespace AssignmentThree
             inputMgr.GetMouseDiff(out d);
             angleHorz += d.X * 0.2f;
             angleVert -= d.Y * 0.2f;
+
+            GamePadState gamePadState = GamePad.GetState(PlayerIndex.One);
+            
+            // Controller
+            if (gamePadState.ThumbSticks.Right.X > 0)
+            {
+                angleHorz += 0.05f;
+            }
+            else if (gamePadState.ThumbSticks.Right.X < 0)
+            {
+                angleHorz -= 0.05f;
+            }
+
+            if (gamePadState.ThumbSticks.Right.Y < 0)
+            {
+                angleVert -= 0.05f;
+            }
+            else if (gamePadState.ThumbSticks.Right.Y > 0)
+            {
+                angleVert += 0.05f;
+            }
 
             Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
             inputMgr.UpdateMouseState(Mouse.GetState());

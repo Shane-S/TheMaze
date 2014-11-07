@@ -31,13 +31,13 @@ Xbox Controls
 -------------
 
 -- Viewing --
-DPadLeft - look left
-DPadRight - look right
-DPadUp - look up
-DPadDown - look down
+Right stick
 
 -- Movement --
-(needed)
+DPadLeft - move left
+DPadRight - move right
+DPadUp - move forward
+DPadDown - move backward
 
 -- Other --
 Y - toggles collision handling
