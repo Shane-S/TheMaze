@@ -20,11 +20,14 @@ F - move left
 H - move right
 
 -- Other --
-Z - zoom in
-X (should be changed to Shift + Z) - zoom out
-W - toggles collision handling
-Home - resets player's position and camera
-B - toggles between day and night
+Z         - zoom in
+Shift + Z - zoom out
+C         - reset zoom
+W         - toggles collision handling
+Home      - resets player's position and camera
+B         - toggles between day and night
+V         - turns fog on/off
+Space     - turns flashlight on/off
 
 -------------
 Xbox Controls
@@ -34,14 +37,14 @@ Xbox Controls
 Right stick
 
 -- Movement --
-DPadLeft - move left
-DPadRight - move right
-DPadUp - move forward
-DPadDown - move backward
+Left stick
 
 -- Other --
-Y - toggles collision handling
-Start - resets player's position and camera
-X - toggles between day and night
-B - zoom in
-A - zoom out
+B              - zoom in
+A              - zoom out
+Right shoulder - reset zoom
+Y              - toggles collision handling
+Start          - resets player's position and camera
+X              - toggles between day and night
+D-Pad Up       - turns fog on/off
+Left Shoulder  - turns flashlight on/off
