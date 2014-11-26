@@ -24,7 +24,8 @@ namespace AssignmentThree
 
         private States state;
         private Random rand;
-        private int speed;
+        private Walls.dir lastDir;
+        private Walls.dir selectedDir;
 
         public Enemy(Vector3 initialPos, Vector3 targetPos, Model model, Texture2D texture, float moveSpeed)
         {
@@ -34,7 +35,6 @@ namespace AssignmentThree
             Texture = texture;
             Speed = moveSpeed;
             state = States.arrived;
-            speed = 1;
             rand = new Random();
         }
 
@@ -58,11 +58,15 @@ namespace AssignmentThree
             if (state == States.arrived)
             {
                 Cell cell = world.GetCellFromPosition(Position);
+                float cellX = cell.x * world.size;
+                float cellY = cell.y * world.size;
 
                 Vector3 targetPos = Vector3.Zero;
 
                 List<Walls.dir> directions = new List<Walls.dir>{ Walls.dir.north, Walls.dir.south, Walls.dir.east, Walls.dir.west };
-		        
+
+                List<Walls.dir> possibleDirections = new List<Walls.dir>();
+                
                 while (directions.Count != 0)
                 {
                     directions = (List<Walls.dir>)Shuffle(directions);
@@ -76,7 +80,8 @@ namespace AssignmentThree
                             }
                             else
                             {
-                                targetPos = new Vector3(cell.x + 6, 6, cell.y - 18);
+                                possibleDirections.Add(Walls.dir.north);
+                                directions.Remove(directions.First());
                             }
                             break;
                         case Walls.dir.south:
@@ -86,7 +91,8 @@ namespace AssignmentThree
                             }
                             else
                             {
-                                targetPos = new Vector3(cell.x + 6, 6, cell.y + 18);
+                                possibleDirections.Add(Walls.dir.south);
+                                directions.Remove(directions.First());
                             }
                             break;
                         case Walls.dir.east:
@@ -96,7 +102,8 @@ namespace AssignmentThree
                             }
                             else
                             {
-                                targetPos = new Vector3(cell.x + 18, 6, cell.y - 6);
+                                possibleDirections.Add(Walls.dir.east);
+                                directions.Remove(directions.First());
                             }
                             break;
                         case Walls.dir.west:
@@ -106,20 +113,79 @@ namespace AssignmentThree
                             }
                             else
                             {
-                                targetPos = new Vector3(cell.x - 18, 6, cell.y - 6);
+                                possibleDirections.Add(Walls.dir.west);
+                                directions.Remove(directions.First());
                             }
                             break;
                         default:
                             break;
                     }
 
-                    if (targetPos != Vector3.Zero)
+                }
+
+                if (selectedDir != null)
+                {
+                    lastDir = selectedDir;
+                }
+                else
+                {
+                    lastDir = possibleDirections.First();
+                }
+
+                selectedDir = possibleDirections.First();
+
+                foreach (Walls.dir direct in possibleDirections)
+                {
+                    switch(lastDir)
                     {
-                        state = States.moving;
-                        TargetPos = targetPos;
-                        break;
+                        case Walls.dir.north:
+                            if (direct != Walls.dir.south)
+                            {
+                                selectedDir = direct;
+                            }
+                            break;
+                        case Walls.dir.south:
+                            if (direct != Walls.dir.north)
+                            {
+                                selectedDir = direct;
+                            }
+                            break;
+                        case Walls.dir.east:
+                            if (direct != Walls.dir.west)
+                            {
+                                selectedDir = direct;
+                            }
+                            break;
+                        case Walls.dir.west:
+                            if (direct != Walls.dir.east)
+                            {
+                                selectedDir = direct;
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
+
+                switch (selectedDir)
+                {
+                    case Walls.dir.north:
+                        targetPos = new Vector3(cellX + 6, 0, -cellY + 6);
+                        break;
+                    case Walls.dir.south:
+                        targetPos = new Vector3(cellX + 6, 0, -cellY - 18);
+                        break;
+                    case Walls.dir.east:
+                        targetPos = new Vector3(cellX + 18, 0, -cellY - 6);
+                        break;
+                    case Walls.dir.west:
+                        targetPos = new Vector3(cellX - 6, 0, -cellY - 6);
+                        break;
+                    default:
+                        break;
+                }
+                TargetPos = targetPos;
+                state = States.moving;
             }
             else if (state == States.moving)
             {
@@ -132,7 +198,7 @@ namespace AssignmentThree
                     state = States.arrived;
                 }
 
-                Position += toTarget * speed;
+                Position += toTarget * Speed;
             }
         }
     }
