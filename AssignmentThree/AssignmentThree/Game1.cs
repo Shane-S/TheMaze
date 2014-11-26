@@ -640,7 +640,7 @@ namespace AssignmentThree
                 wall.RenderShape(GraphicsDevice, sceneEffect);
             }
 
-            Matrix chickenWorld = Matrix.CreateTranslation(chicken.Position);
+            Matrix chickenWorld = Matrix.CreateRotationY(chicken.Orientation) * Matrix.CreateScale(0.3f) * Matrix.CreateTranslation(chicken.Position);
             Matrix[] boneTransforms = new Matrix[chicken.EnemyModel.Bones.Count];
             
             chicken.EnemyModel.CopyAbsoluteBoneTransformsTo(boneTransforms);

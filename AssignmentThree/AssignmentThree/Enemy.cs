@@ -15,6 +15,7 @@ namespace AssignmentThree
         public Model EnemyModel { get; set; }
         public Texture2D Texture { get; set; }
         public float Speed { get; set; }
+        public float Orientation { get; set; }
         
         enum States
         {
@@ -34,6 +35,7 @@ namespace AssignmentThree
             EnemyModel = model;
             Texture = texture;
             Speed = moveSpeed;
+            Orientation = 0;
             state = States.arrived;
             rand = new Random();
         }
@@ -51,6 +53,26 @@ namespace AssignmentThree
             }
 
             return list;
+        }
+
+        private float Face(Vector3 target, Vector3 agentPos)
+        {
+            float facingOffset = (float)Math.PI / 2;
+
+            Vector3 direction = target - agentPos;
+
+            float steering = 0;
+
+            if (direction.Length() == 0)
+            {
+                return steering;
+            }
+
+            float targetOrientation = (float)Math.Atan2(-direction.Z, direction.X) + facingOffset;
+
+            steering = targetOrientation;
+            
+            return steering;
         }
 
         public void Update(GameTime gameTime, Labyrinth world)
@@ -170,22 +192,24 @@ namespace AssignmentThree
                 switch (selectedDir)
                 {
                     case Walls.dir.north:
-                        targetPos = new Vector3(cellX + 6, 0, -cellY + 6);
+                        targetPos = new Vector3(cellX + 6, -6, -cellY + 6);
                         break;
                     case Walls.dir.south:
-                        targetPos = new Vector3(cellX + 6, 0, -cellY - 18);
+                        targetPos = new Vector3(cellX + 6, -6, -cellY - 18);
                         break;
                     case Walls.dir.east:
-                        targetPos = new Vector3(cellX + 18, 0, -cellY - 6);
+                        targetPos = new Vector3(cellX + 18, -6, -cellY - 6);
                         break;
                     case Walls.dir.west:
-                        targetPos = new Vector3(cellX - 6, 0, -cellY - 6);
+                        targetPos = new Vector3(cellX - 6, -6, -cellY - 6);
                         break;
                     default:
                         break;
                 }
                 TargetPos = targetPos;
                 state = States.moving;
+
+                Orientation = Face(TargetPos, Position);
             }
             else if (state == States.moving)
             {
