@@ -8,41 +8,26 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace AssignmentThree
 {
-    class Enemy : IUpdateable, IDrawable
+    class Enemy
     {
         public Vector3 Position { get; set; }
         public Vector3 TargetPos { get; set; }
-        public Model Model { get; set; }
+        public Model EnemyModel { get; set; }
+        public Texture2D Texture { get; set; }
         public float Speed { get; set; }
 
-        public Enemy(Vector3 initialPos, Vector3 targetPos, Model model, float moveSpeed)
+        public Enemy(Vector3 initialPos, Vector3 targetPos, Model model, Texture2D texture, float moveSpeed)
         {
             Position = initialPos;
             TargetPos = targetPos;
-            Model = model;
+            EnemyModel = model;
+            Texture = texture;
             Speed = moveSpeed;
         }
 
         public void Update(GameTime gameTime)
         {
             // Do updating
-        }
-
-        public void Draw (GameTime gameTime)
-        {
-            Matrix world = rend.GetMatrix();
-            Texture2D texture = rend.GetTexture();
-            Matrix[] boneTransforms = new Matrix[Model.Bones.Count];
-            Model.CopyAbsoluteBoneTransformsTo(boneTransforms);
-
-            foreach (ModelMesh mm in Model.Meshes)
-            {
-                foreach (ModelMeshPart mmp in mm.MeshParts)
-                {
-                }
-                mm.Draw();
-                // Do drawing
-            }
         }
     }
 }

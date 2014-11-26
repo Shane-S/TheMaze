@@ -22,6 +22,8 @@ namespace AssignmentThree
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+        Enemy chicken;
+
         #region Maze Variables
         Labyrinth lab;
 
@@ -41,21 +43,21 @@ namespace AssignmentThree
         float angleVert;
         Vector3 position;
         Camera camera;
-        Model chickenModel;
-
         #region Lighting Variables
         Effect sceneEffect;
         float currentAmbience = DAYTIME_AMBIENCE;
         Flashlight light;
         bool fogOn = false;
         #endregion
-        #region Textures
+        #region Textures & Models
         Texture2D box;
         Texture2D boxRed;
         Texture2D boxBlue;
         Texture2D boxGreen;
         Texture2D boxPurple;
         Texture2D boxYellow;
+        Texture2D chickenTexture;
+        Model chickenModel;
         #endregion
 
         InputManager inputMgr;
@@ -109,12 +111,6 @@ namespace AssignmentThree
             angleVert = 0;
             position = lab.GetPlayerSpawn();
             #endregion
-            #region Initialise Cube
-            myCube = new Cube();
-            myCube.size = new Vector3(3, 3, 3);
-            myCube.position = position;
-            myCube.BuildShape();
-            #endregion
             #region Initialise Input Manager
             inputMgr = new InputManager();
 
@@ -161,6 +157,12 @@ namespace AssignmentThree
             boxGreen = Content.Load<Texture2D>("wooden-crate-green");
             boxPurple = Content.Load<Texture2D>("wooden-crate-purple");
             boxYellow = Content.Load<Texture2D>("wooden-crate-yellow");
+
+            chickenTexture = Content.Load<Texture2D>("chicken_diffuse");
+            chickenModel = Content.Load<Model>("chicken");
+            #region Initialise Chicken
+            chicken = new Enemy(position, position, chickenModel, chickenTexture, 0.5f);
+            #endregion
         }
 
         /// <summary>
@@ -493,9 +495,7 @@ namespace AssignmentThree
         private void DrawSceneLit()
         {
             GraphicsDevice.Clear(Color.Gray);
-            Matrix reflected;
-            Microsoft.Xna.Framework.Plane p = new Microsoft.Xna.Framework.Plane(Vector3.UnitX, 0);
-            Matrix.CreateReflection(ref p, out reflected);
+            
             sceneEffect.CurrentTechnique = sceneEffect.Techniques["Technique1"];
             sceneEffect.Parameters["View"].SetValue(camera.View);
             sceneEffect.Parameters["Projection"].SetValue(camera.Projection);
@@ -550,6 +550,22 @@ namespace AssignmentThree
                 sceneEffect.Parameters["BoxTexture"].SetValue(boxPurple);
                 sceneEffect.Parameters["World"].SetValue(Matrix.CreateTranslation(wall.position + offset));
                 wall.RenderShape(GraphicsDevice, sceneEffect);
+            }
+
+            Matrix chickenWorld = Matrix.CreateTranslation(chicken.Position);
+            Matrix[] boneTransforms = new Matrix[chicken.EnemyModel.Bones.Count];
+            
+            chicken.EnemyModel.CopyAbsoluteBoneTransformsTo(boneTransforms);
+            foreach (ModelMesh mm in chicken.EnemyModel.Meshes)
+            {
+                foreach (ModelMeshPart mmp in mm.MeshParts)
+                {
+                    mmp.Effect = sceneEffect;
+                    Matrix worldInverseTransposeMatrix = Matrix.Transpose(Matrix.Invert(boneTransforms[mm.ParentBone.Index]));
+                    mmp.Effect.Parameters["World"].SetValue(boneTransforms[mm.ParentBone.Index] * chickenWorld);
+                    mmp.Effect.Parameters["BoxTexture"].SetValue(chicken.Texture);
+                }
+                mm.Draw();
             }
         }
 
