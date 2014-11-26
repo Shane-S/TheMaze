@@ -41,6 +41,7 @@ namespace AssignmentThree
         float angleVert;
         Vector3 position;
         Camera camera;
+        Model chickenModel;
 
         #region Lighting Variables
         Effect sceneEffect;
@@ -137,6 +138,7 @@ namespace AssignmentThree
             inputMgr.AddNamedAction("collision_toggle", new InputAction(0, Keys.W, Buttons.Y));
 
             inputMgr.AddNamedAction("reset", new InputAction(0, Keys.Home, Buttons.Start));
+
             #endregion
             base.Initialize();
         }

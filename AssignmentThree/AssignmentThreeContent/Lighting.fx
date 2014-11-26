@@ -9,7 +9,6 @@ float AmbientLightingFactor;
 float3 LightPos;
 float3 CameraLookAt;
 
-
 float LightDecayExponent;
 float LightDistance;
 float4 LightColour;
