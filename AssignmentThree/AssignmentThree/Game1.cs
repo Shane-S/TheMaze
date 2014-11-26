@@ -37,12 +37,14 @@ namespace AssignmentThree
         private bool collisionOn;
         #endregion
 
-        Cube myCube;
         BasicEffect effect;
+        #region Camera & Position
         float angleHorz;
         float angleVert;
-        Vector3 position;
         Camera camera;
+        Vector3 position;
+        Vector3 prevPosition;
+        #endregion
         #region Lighting Variables
         Effect sceneEffect;
         float currentAmbience = DAYTIME_AMBIENCE;
@@ -59,7 +61,14 @@ namespace AssignmentThree
         Texture2D chickenTexture;
         Model chickenModel;
         #endregion
-
+        #region Audio Variables
+        Song currentSong;
+        Song lightMusic;
+        Song darkMusic;
+        SoundEffect footsteps;
+        AudioEmitter emitter;
+        AudioListener listener;
+        #endregion
         InputManager inputMgr;
 
         public Game1()
@@ -135,6 +144,8 @@ namespace AssignmentThree
 
             inputMgr.AddNamedAction("reset", new InputAction(0, Keys.Home, Buttons.Start));
 
+            inputMgr.AddNamedAction("toggle_music", new InputAction(0, Keys.OemPeriod, Buttons.DPadRight));
+
             #endregion
             base.Initialize();
         }
@@ -151,17 +162,33 @@ namespace AssignmentThree
 
             light = new Flashlight(70f, 5f, 30f, Color.Wheat, sceneEffect);
 
+            #region Load Box Textures
             box = Content.Load<Texture2D>("wooden-crate");
             boxRed = Content.Load<Texture2D>("wooden-crate-red");
             boxBlue = Content.Load<Texture2D>("wooden-crate-blue");
             boxGreen = Content.Load<Texture2D>("wooden-crate-green");
             boxPurple = Content.Load<Texture2D>("wooden-crate-purple");
             boxYellow = Content.Load<Texture2D>("wooden-crate-yellow");
-
+            #endregion
+            #region Initialise Chicken
             chickenTexture = Content.Load<Texture2D>("chicken_diffuse");
             chickenModel = Content.Load<Model>("chicken");
-            #region Initialise Chicken
             chicken = new Enemy(position, position, chickenModel, chickenTexture, 0.5f);
+            #endregion
+            #region Load Audio
+            darkMusic = Content.Load<Song>("Blood");
+            lightMusic = Content.Load<Song>("Hyrule");
+            currentSong = lightMusic;
+            emitter = new AudioEmitter();
+            listener = new AudioListener();
+
+            listener.Forward = camera.CameraLookAt;
+            listener.Up = Vector3.UnitY;
+            listener.Velocity = Vector3.Zero;
+            listener.Position = camera.CameraPosition;
+
+            MediaPlayer.Play(lightMusic);
+            MediaPlayer.IsRepeating = true;
             #endregion
         }
 
@@ -181,7 +208,7 @@ namespace AssignmentThree
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            GetInput();
+            GetInput(gameTime);
 
             if (collisionOn)
             {
@@ -193,12 +220,57 @@ namespace AssignmentThree
             base.Update(gameTime);
         }
 
+        public void UpdateAudio(GameTime time)
+        {
+            MediaState currentState = MediaPlayer.State;
+
+            if (inputMgr.ActionOccurred("toggle_music", InputActionType.Pressed))
+            {
+                if (currentState == MediaState.Playing)
+                    MediaPlayer.Pause();
+                else
+                    MediaPlayer.Resume();
+
+                currentState = MediaPlayer.State;
+            }
+
+            if(inputMgr.ActionOccurred("change_ambience", InputActionType.Pressed))
+            {
+                currentSong = currentSong == darkMusic ? lightMusic : darkMusic;
+                MediaPlayer.Stop();
+                MediaPlayer.Play(currentSong);
+
+                if(currentState == MediaState.Paused)
+                    MediaPlayer.Pause();
+            }
+
+            if(inputMgr.ActionOccurred("fog_toggle", InputActionType.Pressed))
+            {
+                if (fogOn)
+                    MediaPlayer.Volume *= 0.5f;
+                else
+                    MediaPlayer.Volume *= 2;
+            }
+
+            Vector3 playerVel = (position - prevPosition) / (float)time.ElapsedGameTime.TotalSeconds;
+            Vector3 chickenVel = (chicken.TargetPos - chicken.Position) / (float)time.ElapsedGameTime.TotalSeconds;
+            Vector3 chickenForward = chickenVel;
+
+            chickenForward.Normalize();
+            listener.Forward = camera.CameraLookAt;
+            listener.Velocity = playerVel;
+            listener.Position = camera.CameraPosition;
+
+            emitter.Forward = chickenForward;
+            emitter.Velocity = chickenVel;
+            emitter.Position = chicken.Position;
+        }
+
         private void MoveCamera(Vector3 move)
         {
             Matrix rot = Matrix.CreateRotationY(MathHelper.ToRadians(angleHorz));
-
             move = Vector3.Transform(move, rot);
-
+            prevPosition = position;
             position += move;
         }
 
@@ -317,7 +389,7 @@ namespace AssignmentThree
             }
         }
 
-        public void GetInput()
+        public void GetInput(GameTime gameTime)
         {
             Vector2 d;
             inputMgr.Update();
@@ -366,6 +438,8 @@ namespace AssignmentThree
             {
                 ToggleFog();
             }
+
+            UpdateAudio(gameTime);
 
             // Mouse movement
             inputMgr.GetMouseDiff(out d);
@@ -439,12 +513,6 @@ namespace AssignmentThree
             effect.View = camera.View;
             effect.Projection = camera.Projection;
             effect.DirectionalLight0.Direction = Vector3.Normalize(new Vector3(0, 0, 1.0f));
-
-            // TODO: Add your drawing code here
-            myCube.RenderShape(GraphicsDevice, effect);
-
-            //bool alt = false;
-
             effect.TextureEnabled = true;
 
             Vector3 offset = new Vector3(6, 0, -6);
