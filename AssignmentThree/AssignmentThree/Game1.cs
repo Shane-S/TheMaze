@@ -65,7 +65,8 @@ namespace AssignmentThree
         Song currentSong;
         Song lightMusic;
         Song darkMusic;
-        SoundEffect footsteps;
+        SoundEffect steps;
+        SoundEffectInstance stepsInstance;
         AudioEmitter emitter;
         AudioListener listener;
         #endregion
@@ -179,6 +180,10 @@ namespace AssignmentThree
             darkMusic = Content.Load<Song>("Blood");
             lightMusic = Content.Load<Song>("Hyrule");
             currentSong = lightMusic;
+            
+            steps = Content.Load<SoundEffect>("footsteps");
+            stepsInstance = steps.CreateInstance();
+
             emitter = new AudioEmitter();
             listener = new AudioListener();
 
@@ -189,6 +194,7 @@ namespace AssignmentThree
 
             MediaPlayer.Play(lightMusic);
             MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = 0.1f;
             #endregion
         }
 
@@ -208,30 +214,44 @@ namespace AssignmentThree
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            GetInput(gameTime);
+            GetInput();
 
             if (collisionOn)
             {
                 HandleCollisions();
             }
 
-            camera.Update(position, angleHorz, angleVert);
             chicken.Update(gameTime, lab);
+            camera.Update(position, angleHorz, angleVert);
+            UpdateAudio(gameTime);
             base.Update(gameTime);
         }
 
         public void UpdateAudio(GameTime time)
         {
-            MediaState currentState = MediaPlayer.State;
-
+            #region Footsteps
+            SoundState stepsState = stepsInstance.State;
+            // We've moved during this frame
+            if (prevPosition != position)
+            {
+                if (stepsState == SoundState.Stopped)
+                    stepsInstance.Play();
+                else if (stepsState == SoundState.Paused)
+                    stepsInstance.Resume();
+            }
+            else if (stepsState == SoundState.Playing)
+                stepsInstance.Pause();
+            #endregion
+            #region Background Music
+            MediaState musicState = MediaPlayer.State;
             if (inputMgr.ActionOccurred("toggle_music", InputActionType.Pressed))
             {
-                if (currentState == MediaState.Playing)
+                if (musicState == MediaState.Playing)
                     MediaPlayer.Pause();
                 else
                     MediaPlayer.Resume();
 
-                currentState = MediaPlayer.State;
+                musicState = MediaPlayer.State;
             }
 
             if(inputMgr.ActionOccurred("change_ambience", InputActionType.Pressed))
@@ -240,7 +260,7 @@ namespace AssignmentThree
                 MediaPlayer.Stop();
                 MediaPlayer.Play(currentSong);
 
-                if(currentState == MediaState.Paused)
+                if(musicState == MediaState.Paused)
                     MediaPlayer.Pause();
             }
 
@@ -251,7 +271,8 @@ namespace AssignmentThree
                 else
                     MediaPlayer.Volume *= 2;
             }
-
+            #endregion
+            #region Directional Audio
             Vector3 playerVel = (position - prevPosition) / (float)time.ElapsedGameTime.TotalSeconds;
             Vector3 chickenVel = (chicken.TargetPos - chicken.Position) / (float)time.ElapsedGameTime.TotalSeconds;
             Vector3 chickenForward = chickenVel;
@@ -264,13 +285,13 @@ namespace AssignmentThree
             emitter.Forward = chickenForward;
             emitter.Velocity = chickenVel;
             emitter.Position = chicken.Position;
+            #endregion
         }
 
         private void MoveCamera(Vector3 move)
         {
             Matrix rot = Matrix.CreateRotationY(MathHelper.ToRadians(angleHorz));
             move = Vector3.Transform(move, rot);
-            prevPosition = position;
             position += move;
         }
 
@@ -389,11 +410,12 @@ namespace AssignmentThree
             }
         }
 
-        public void GetInput(GameTime gameTime)
+        public void GetInput()
         {
             Vector2 d;
-            inputMgr.Update();
+            prevPosition = position;
 
+            inputMgr.Update();
             // Allows the game to exit
             if (inputMgr.ExitWasPressed())
                 this.Exit();
@@ -438,8 +460,6 @@ namespace AssignmentThree
             {
                 ToggleFog();
             }
-
-            UpdateAudio(gameTime);
 
             // Mouse movement
             inputMgr.GetMouseDiff(out d);
