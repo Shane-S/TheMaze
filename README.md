@@ -2,44 +2,43 @@ TheMaze
 =======
 A procedurally generated maze with shading and stuff. One day it will have AI, too.
 
------------
 PC Controls
 -----------
 
--- Viewing --
+### Viewing ###
 Mouse - look around 
 Left Arrow - look left
 Right Arrow - look right
 Up Arrow - look up
 Down Arrow - look down
 
--- Movement --
+### Movement ###
 T - move forward
 G - move backward
 F - move left
 H - move right
 
--- Other --
-Z         - zoom in
-Shift + Z - zoom out
-C         - reset zoom
-W         - toggles collision handling
-Home      - resets player's position and camera
-B         - toggles between day and night
-V         - turns fog on/off
-Space     - turns flashlight on/off
+### Other ###
+Z          - zoom in
+Shift + Z  - zoom out
+C          - reset zoom
+W          - toggles collision handling
+Home       - resets player's position and camera
+B          - toggles between day and night
+V          - turns fog on/off
+Space      - turns flashlight on/off
+. (Period) - pause/resume music
 
--------------
 Xbox Controls
 -------------
 
--- Viewing --
+### Viewing ###
 Right stick
 
--- Movement --
+### Movement ###
 Left stick
 
--- Other --
+### Other ###
 B              - zoom in
 A              - zoom out
 Right shoulder - reset zoom
@@ -48,3 +47,4 @@ Start          - resets player's position and camera
 X              - toggles between day and night
 D-Pad Up       - turns fog on/off
 Left Shoulder  - turns flashlight on/off
+D-Pad Right    - pause/resume music
