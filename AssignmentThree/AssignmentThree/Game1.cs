@@ -189,7 +189,7 @@ namespace AssignmentThree
             }
 
             camera.Update(position, angleHorz, angleVert);
-            
+            chicken.Update(gameTime, lab);
             base.Update(gameTime);
         }
 
