@@ -67,8 +67,6 @@ namespace AssignmentThree
         Song darkMusic;
         SoundEffect steps;
         SoundEffectInstance stepsInstance;
-        AudioEmitter emitter;
-        AudioListener listener;
         #endregion
         InputManager inputMgr;
 
@@ -181,20 +179,12 @@ namespace AssignmentThree
             lightMusic = Content.Load<Song>("Hyrule");
             currentSong = lightMusic;
             
-            steps = Content.Load<SoundEffect>("footsteps");
+            steps = Content.Load<SoundEffect>("footsteps_ampd");
             stepsInstance = steps.CreateInstance();
-
-            emitter = new AudioEmitter();
-            listener = new AudioListener();
-
-            listener.Forward = camera.CameraLookAt;
-            listener.Up = Vector3.UnitY;
-            listener.Velocity = Vector3.Zero;
-            listener.Position = camera.CameraPosition;
-
+            
             MediaPlayer.Play(lightMusic);
             MediaPlayer.IsRepeating = true;
-            MediaPlayer.Volume = 0.1f;
+            MediaPlayer.Volume = 0.5f;
             #endregion
         }
 
@@ -244,6 +234,11 @@ namespace AssignmentThree
             #endregion
             #region Background Music
             MediaState musicState = MediaPlayer.State;
+            
+            // Get distance of the chicken
+            Vector3 distVect = new Vector3(position.X - chicken.Position.X, 0, position.Z - chicken.Position.Z);
+            double dist = Math.Sqrt(Vector3.Dot(distVect, distVect));
+
             if (inputMgr.ActionOccurred("toggle_music", InputActionType.Pressed))
             {
                 if (musicState == MediaState.Playing)
@@ -271,20 +266,6 @@ namespace AssignmentThree
                 else
                     MediaPlayer.Volume *= 2;
             }
-            #endregion
-            #region Directional Audio
-            Vector3 playerVel = (position - prevPosition) / (float)time.ElapsedGameTime.TotalSeconds;
-            Vector3 chickenVel = (chicken.TargetPos - chicken.Position) / (float)time.ElapsedGameTime.TotalSeconds;
-            Vector3 chickenForward = chickenVel;
-
-            chickenForward.Normalize();
-            listener.Forward = camera.CameraLookAt;
-            listener.Velocity = playerVel;
-            listener.Position = camera.CameraPosition;
-
-            emitter.Forward = chickenForward;
-            emitter.Velocity = chickenVel;
-            emitter.Position = chicken.Position;
             #endregion
         }
 
