@@ -172,7 +172,7 @@ namespace AssignmentThree
             #region Initialise Chicken
             chickenTexture = Content.Load<Texture2D>("chicken_diffuse");
             chickenModel = Content.Load<Model>("chicken");
-            chicken = new Enemy(position, position, chickenModel, chickenTexture, 0.5f);
+            chicken = new Enemy(position, position, chickenModel, chickenTexture, 0.2f);
             #endregion
             #region Load Audio
             darkMusic = Content.Load<Song>("Blood");
@@ -184,7 +184,7 @@ namespace AssignmentThree
             
             MediaPlayer.Play(lightMusic);
             MediaPlayer.IsRepeating = true;
-            MediaPlayer.Volume = 0.5f;
+            MediaPlayer.Volume = 1;
             #endregion
         }
 
@@ -237,7 +237,10 @@ namespace AssignmentThree
             
             // Get distance of the chicken
             Vector3 distVect = new Vector3(position.X - chicken.Position.X, 0, position.Z - chicken.Position.Z);
-            double dist = Math.Sqrt(Vector3.Dot(distVect, distVect));
+            float dist = (float)Math.Sqrt(Vector3.Dot(distVect, distVect));
+            float newVol = 1 - (dist / 75f);
+            newVol = newVol < 0 ? 0 : newVol;
+            MediaPlayer.Volume = newVol;
 
             if (inputMgr.ActionOccurred("toggle_music", InputActionType.Pressed))
             {
@@ -259,13 +262,12 @@ namespace AssignmentThree
                     MediaPlayer.Pause();
             }
 
-            if(inputMgr.ActionOccurred("fog_toggle", InputActionType.Pressed))
-            {
-                if (fogOn)
-                    MediaPlayer.Volume *= 0.5f;
-                else
-                    MediaPlayer.Volume *= 2;
-            }
+            // Since we're setting the volume every frame, this won't cause it to continuously
+            // amplify/dampen sound
+            if (fogOn)
+                MediaPlayer.Volume *= 0.5f;
+            else
+                MediaPlayer.Volume *= 2;
             #endregion
         }
 
@@ -460,13 +462,13 @@ namespace AssignmentThree
             float leftStickY = inputMgr.CurGamepadState.ThumbSticks.Left.Y;
 
             if (inputMgr.ActionOccurred("move_forward", InputActionType.Down))
-                MoveCamera(new Vector3(0, 0, 0.2f));
+                MoveCamera(new Vector3(0, 0, 0.3f));
             if (inputMgr.ActionOccurred("move_back", InputActionType.Down))
-                MoveCamera(new Vector3(0, 0, -0.2f));
+                MoveCamera(new Vector3(0, 0, -0.3f));
             if (inputMgr.ActionOccurred("move_right", InputActionType.Down))
-                MoveCamera(new Vector3(-0.2f, 0, 0));
+                MoveCamera(new Vector3(-0.3f, 0, 0));
             if (inputMgr.ActionOccurred("move_left", InputActionType.Down))
-                MoveCamera(new Vector3(0.2f, 0, 0));
+                MoveCamera(new Vector3(0.3f, 0, 0));
 
             if (leftStickX != 0 || leftStickY != 0)
                 MoveCamera(new Vector3(-leftStickX * 0.5f, 0, leftStickY * 0.5f));
@@ -574,6 +576,7 @@ namespace AssignmentThree
             sceneEffect.Parameters["FarPlane"].SetValue(camera.FarClip);
             sceneEffect.Parameters["FogColour"].SetValue(Color.Gray.ToVector4());
             sceneEffect.Parameters["FogOn"].SetValue(fogOn);
+            sceneEffect.Parameters["IsChicken"].SetValue(false);
 
 
             Vector3 offset = new Vector3(6, 0, -6);
@@ -625,6 +628,7 @@ namespace AssignmentThree
             Matrix[] boneTransforms = new Matrix[chicken.EnemyModel.Bones.Count];
             
             chicken.EnemyModel.CopyAbsoluteBoneTransformsTo(boneTransforms);
+            sceneEffect.Parameters["IsChicken"].SetValue(true);
             foreach (ModelMesh mm in chicken.EnemyModel.Meshes)
             {
                 foreach (ModelMeshPart mmp in mm.MeshParts)

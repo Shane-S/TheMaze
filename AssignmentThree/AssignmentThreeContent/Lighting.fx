@@ -20,6 +20,7 @@ float4 FogColour;
 bool FogOn;
 
 bool FlashlightOn;
+bool IsChicken;
 
 // The wall texture and a sampler to sample its values
 Texture2D BoxTexture;
@@ -84,6 +85,9 @@ AMBIENT_VS_OUT AmbientVertexShader(AMBIENT_VS_IN input)
 	output.Position3D = pos;
 	output.ViewSpaceZ = -viewPos.z / FarPlane;
 	
+	if (IsChicken)
+		output.Normal *= -1;
+
     return output;
 }
 
