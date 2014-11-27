@@ -6,17 +6,17 @@ PC Controls
 -----------
 
 ### Viewing ###
-Mouse - look around 
-Left Arrow - look left
-Right Arrow - look right
-Up Arrow - look up
-Down Arrow - look down
++ Mouse - look around 
++ Left Arrow - look left
++ Right Arrow - look right
++ Up Arrow - look up
++ Down Arrow - look down
 
 ### Movement ###
-T - move forward
-G - move backward
-F - move left
-H - move right
++ T - move forward
++ G - move backward
++ F - move left
++ H - move right
 
 ### Other ###
 + Z          - zoom in
@@ -33,10 +33,10 @@ Xbox Controls
 -------------
 
 ### Viewing ###
-Right stick
++ Right stick
 
 ### Movement ###
-Left stick
++ Left stick
 
 ### Other ###
 + B              - zoom in
